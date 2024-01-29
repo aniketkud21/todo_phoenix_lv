@@ -8,6 +8,11 @@
   
 </.header>
 
+<.simple_form for={@searchForm} phx-submit="searchTodo">
+  <.input field={@searchForm[:default_value]} value={@searchForm.params.default_value}/>
+  <.button>Add</.button>
+</.simple_form>
+
 <.table
   id="todos"
   rows={@streams.todos}

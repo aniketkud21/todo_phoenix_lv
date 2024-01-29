@@ -9,7 +9,8 @@ defmodule TodoLvWeb.TodoLive.Index do
     # {:ok, stream(socket, :todos, Todos.list_todos())}
     {:ok,
    socket
-   |> stream(:todos, Todos.list_todos())}
+   |> stream(:todos, Todos.list_todos())
+   |> assign(searchForm: to_form(%{default_value: ""}))}
 
   end
 
@@ -63,5 +64,11 @@ defmodule TodoLvWeb.TodoLive.Index do
     # Used stream instead of assign
     {:noreply, stream(socket, :todos, Todos.list_todos)}
     # Todos.update_todo(todo, {like: !(todo.like)})
+  end
+
+  # --------------------------
+
+  def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
+    # Enum.filter()
   end
 end
