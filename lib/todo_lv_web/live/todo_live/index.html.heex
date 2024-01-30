@@ -9,7 +9,7 @@
 </.header>
 
 <.simple_form for={@searchForm} phx-change="searchTodo">
-  <.input id="search-input" field={@searchForm[:default_value]} value={@searchForm.params.default_value}/>
+  <.input id="search-input" field={@searchForm[:default_value]} value={@searchForm.params.default_value} phx-debounce="500"/>
   <.button>Search</.button>
 </.simple_form>
 

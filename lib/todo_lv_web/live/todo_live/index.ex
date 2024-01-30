@@ -71,7 +71,7 @@ defmodule TodoLvWeb.TodoLive.Index do
   def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
     IO.inspect(search_query)
     #todos = Todos.search(search_query)
-    {:noreply, stream(socket, :todos, [])}
+    {:noreply, stream(socket, :todos, [], reset: true)}
   end
 
   @impl true
@@ -79,7 +79,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     IO.inspect(search_query)
     todos = Todos.search(search_query)
     IO.inspect(todos)
-    {:noreply, stream(socket, :todos, todos)}
+    {:noreply, stream(socket, :todos, todos, reset: true)}
   end
 
   # def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
