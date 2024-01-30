@@ -51,7 +51,7 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   # -------------------------
-
+  @impl true
   def handle_event("heartpress", %{"id" => id}, socket) do
     todo = Todos.get_todo!(id)
     IO.inspect(todo, label: "fIRST")
@@ -66,9 +66,29 @@ defmodule TodoLvWeb.TodoLive.Index do
     # Todos.update_todo(todo, {like: !(todo.like)})
   end
 
-  # --------------------------
-
-  def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
-    # Enum.filter()
+  # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
+  @impl true
+  def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
+    IO.inspect(search_query)
+    #todos = Todos.search(search_query)
+    {:noreply, stream(socket, :todos, [])}
   end
+
+  @impl true
+  def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
+    IO.inspect(search_query)
+    todos = Todos.search(search_query)
+    IO.inspect(todos)
+    {:noreply, stream(socket, :todos, todos)}
+  end
+
+  # def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
+  #   IO.inspect(searchEntry)
+  #   all_todos = Todos.list_todos()
+  #   filtered_todos = Enum.filter(all_todos, fn x ->
+  #     x[:title] !=searchEntry
+  #   end)
+  #   IO.inspect(filtered_todos)
+  #   {:noreply, stream(socket, :todos, filtered_todos)}
+  # end
 end

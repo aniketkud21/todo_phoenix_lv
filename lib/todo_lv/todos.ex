@@ -101,4 +101,18 @@ defmodule TodoLv.Todos do
   def change_todo(%Todo{} = todo, attrs \\ %{}) do
     Todo.changeset(todo, attrs)
   end
+
+# --------------------------------------
+  def search(search_query) do
+    search_query = "%#{search_query}%"
+    IO.inspect(search_query)
+    Todo
+    |> order_by(asc: :title)
+    |> where([t], ilike(t.title, ^search_query))
+    #|> limit(5)
+    |> Repo.all()
+  end
 end
+
+
+# where([t], ilike(t.status, ^search_query))
