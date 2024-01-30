@@ -9,13 +9,22 @@ defmodule TodoLvWeb.TodoLive.Index do
     # {:ok, stream(socket, :todos, Todos.list_todos())}
     {:ok,
    socket
-   |> stream(:todos, Todos.list_todos())
+   # |> stream(:todos, Todos.list_todos)
    |> assign(searchForm: to_form(%{default_value: ""}))}
 
   end
 
   @impl true
   def handle_params(params, _url, socket) do
+    # case Todos.list_todos(params) do
+    #   {:ok, {todos, meta}} ->
+    #     IO.inspect(meta)
+    #     {:noreply,
+    #        socket
+    #        |> assign(:meta, meta)
+    #        |> stream(:pets, todos, reset: true)
+    #        |> apply_action(socket.assigns.live_action, params)}
+    # end
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
@@ -31,10 +40,13 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> assign(:todo, %Todo{})
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(socket, :index, params) do
+    %{todos: todos, meta: meta} = Todos.list_todos(params)
     socket
     |> assign(:page_title, "Listing Todos")
-    |> assign(:todo, nil)
+    #|> assign(:todo, nil)
+    |> stream(:todos, todos, reset: true)
+    |> assign(:meta, meta)
   end
 
   @impl true
@@ -62,7 +74,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     IO.inspect(Todos.get_todo!(id), label: "HELLOSSSSSS")
     # IO.inspect(socket)
     # Used stream instead of assign
-    {:noreply, stream(socket, :todos, Todos.list_todos)}
+    {:noreply, stream(socket, :todos, Todos.list_todos, reset: true)}
     # Todos.update_todo(todo, {like: !(todo.like)})
   end
 

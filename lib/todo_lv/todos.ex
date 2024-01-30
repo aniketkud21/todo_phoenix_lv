@@ -17,8 +17,19 @@ defmodule TodoLv.Todos do
       [%Todo{}, ...]
 
   """
-  def list_todos do
+  def list_todos() do
     Repo.all(Todo)
+  end
+
+  def list_todos(params) do
+    case Flop.validate_and_run(Todo, params, for: Todo) do
+      {:ok, {todos, meta}} ->
+        %{todos: todos, meta: meta}
+      {:error, meta} ->
+        %{todos: [], meta: meta}
+    end
+    # Flop.validate_and_run(Todo, params, for: Todo)
+    #Repo.all(Todo)
   end
 
   @doc """

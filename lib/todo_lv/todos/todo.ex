@@ -2,12 +2,19 @@ defmodule TodoLv.Todos.Todo do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {
+    Flop.Schema,
+    filterable: [:title, :status],
+    sortable: [:title, :status],
+    default_limit: 4
+  }
+
   schema "todos" do
     field :status, :string
     field :title, :string
     field :desc, :string
     field :like, :boolean, default: false
-    belongs_to :user, TodoLv.Accounts
+    belongs_to :user, TodoLv.Accounts.User
 
     timestamps(type: :utc_datetime)
   end
