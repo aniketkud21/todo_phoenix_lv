@@ -7,6 +7,7 @@ defmodule TodoLv.Todos.Todo do
     field :title, :string
     field :desc, :string
     field :like, :boolean, default: false
+    belongs_to :user, TodoLv.Accounts
 
     timestamps(type: :utc_datetime)
   end
