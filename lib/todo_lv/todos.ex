@@ -120,7 +120,7 @@ defmodule TodoLv.Todos do
     Todo
     |> order_by(asc: :title)
     |> where([t], ilike(t.title, ^search_query))
-    #|> limit(5)
+    |> limit(4)
     |> Repo.all()
   end
 end

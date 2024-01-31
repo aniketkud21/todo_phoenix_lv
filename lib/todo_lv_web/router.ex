@@ -18,7 +18,7 @@ defmodule TodoLvWeb.Router do
   end
 
   scope "/", TodoLvWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser]
 
     get "/", PageController, :home
 

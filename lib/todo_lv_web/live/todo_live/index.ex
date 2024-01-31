@@ -5,8 +5,10 @@ defmodule TodoLvWeb.TodoLive.Index do
   alias TodoLv.Todos.Todo
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     # {:ok, stream(socket, :todos, Todos.list_todos())}
+    IO.inspect(session, label: "Session data")
+
     {:ok,
    socket
    # |> stream(:todos, Todos.list_todos)
@@ -58,7 +60,7 @@ defmodule TodoLvWeb.TodoLive.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     todo = Todos.get_todo!(id)
     {:ok, _} = Todos.delete_todo(todo)
-
+    IO.inspect(todo)
     {:noreply, stream_delete(socket, :todos, todo)}
   end
 
@@ -74,23 +76,24 @@ defmodule TodoLvWeb.TodoLive.Index do
     IO.inspect(Todos.get_todo!(id), label: "HELLOSSSSSS")
     # IO.inspect(socket)
     # Used stream instead of assign
-    {:noreply, stream(socket, :todos, Todos.list_todos, reset: true)}
+    {:noreply, stream_insert(socket, :todos, Todos.get_todo!(id))}
+    # {:noreply, socket}
     # Todos.update_todo(todo, {like: !(todo.like)})
   end
 
   # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
-  @impl true
-  def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
-    IO.inspect(search_query)
-    #todos = Todos.search(search_query)
-    {:noreply, stream(socket, :todos, [], reset: true)}
-  end
+  # @impl true
+  # def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
+  #   IO.inspect(search_query)
+  #   #todos = Todos.search(search_query)
+  #   {:noreply, stream(socket, :todos, [], reset: true)}
+  # end
 
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
     IO.inspect(search_query)
     todos = Todos.search(search_query)
-    IO.inspect(todos)
+    #IO.inspect(todos)
     {:noreply, stream(socket, :todos, todos, reset: true)}
   end
 
