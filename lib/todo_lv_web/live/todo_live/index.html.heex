@@ -43,7 +43,15 @@
     </:action>
 </.table>  
 
+<.link phx-click="prev">
+  prev
+</.link>
 
+<%= @page_number %>
+
+<.link phx-click="next">
+  next
+</.link>
 
 <.modal :if={@live_action in [:new, :edit]} id="todo-modal" show on_cancel={JS.patch(~p"/todos")}>
   <.live_component

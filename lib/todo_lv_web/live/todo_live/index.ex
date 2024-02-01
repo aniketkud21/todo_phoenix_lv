@@ -14,9 +14,10 @@ defmodule TodoLvWeb.TodoLive.Index do
     # IO.inspect(Todos.list_todos)
     {:ok,
    socket
-   |> stream(:todos, user.todos)
+   #|> stream(:todos, user.todos)
    |> assign(searchForm: to_form(%{default_value: ""}))
-   |> assign(:user, user)}
+   |> assign(:user, user)
+   |> assign(:page_number, 1)}
   end
 
   @impl true
@@ -41,9 +42,14 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
+    sorted_todos = socket.assigns.user.todos
+    |> Enum.sort_by(&(&1.updated_at), Date)
+    |> Enum.reverse()
+    |> Enum.slice(socket.assigns.page_number*2 , 2)
+
     socket
     |> assign(:page_title, "Listing Todos")
-    |> assign(:todo, nil)
+    |> stream(:todos, sorted_todos)
   end
 
   @impl true
@@ -58,6 +64,29 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     {:noreply, stream_delete(socket, :todos, todo)}
   end
+
+  @impl true
+  def handle_event("next", _unsigned_params, socket) do
+    current_page_number = socket.assigns.page_number + 1
+    IO.inspect(socket.assigns.page_number)
+
+    paginated_todos = handle_pagination(socket, current_page_number)
+    {:noreply, socket
+    |> assign(:page_number, current_page_number)
+    |> stream(:todos, paginated_todos, reset: true)}
+  end
+
+  @impl true
+  def handle_event("prev", _unsigned_params, socket) do
+    current_page_number = socket.assigns.page_number - 1
+    IO.inspect(socket.assigns.page_number)
+
+    paginated_todos = handle_pagination(socket, current_page_number)
+    {:noreply, socket
+    |> assign(:page_number, current_page_number)
+    |> stream(:todos, paginated_todos, reset: true)}
+  end
+
 
   # -------------------------
   @impl true
@@ -95,6 +124,13 @@ defmodule TodoLvWeb.TodoLive.Index do
     end)
     IO.inspect(todos, label: "Search Todos")
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
+  end
+
+  defp handle_pagination(socket, current_page_number) do
+    socket.assigns.user.todos
+    |> Enum.sort_by(&(&1.updated_at), Date)
+    |> Enum.reverse()
+    |> Enum.slice((current_page_number-1) * 2 , 2)
   end
 
   # def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
