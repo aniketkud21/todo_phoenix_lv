@@ -49,6 +49,7 @@
   <.live_component
     module={TodoLvWeb.TodoLive.FormComponent}
     id={@todo.id || :new}
+    current_user={@user}
     title={@page_title}
     action={@live_action}
     todo={@todo}

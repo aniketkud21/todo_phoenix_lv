@@ -19,10 +19,10 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:title]} type="text" label="Title" />
-        <.input field={@form[:desc]} type="text" label="Desc" />
-        <.input field={@form[:status]} type="text" label="Status" />
-        <.input field={@form[:like]} type="checkbox" label="Like" />
+        <.input field={@form[:title]} type="text" label="Title" phx-debounce="500"/>
+        <.input field={@form[:desc]} type="text" label="Desc" phx-debounce="500"/>
+        <.input field={@form[:status]} type="text" label="Status" phx-debounce="500"/>
+        <.input field={@form[:like]} type="checkbox" label="Like" phx-debounce="500"/>
         <:actions>
           <.button phx-disable-with="Saving...">Save Todo</.button>
         </:actions>
@@ -52,7 +52,9 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   def handle_event("save", %{"todo" => todo_params}, socket) do
-    save_todo(socket, socket.assigns.action, todo_params)
+    IO.inspect(socket, label: "Socket on save")
+    updated_todo_params = Map.put_new(todo_params, "user_id" , socket.assigns.current_user.id)
+    save_todo(socket, socket.assigns.action, updated_todo_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do

@@ -45,7 +45,7 @@ defmodule TodoLvWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through [:browser, :require_authenticated_user]
 
       live_dashboard "/dashboard", metrics: TodoLvWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview

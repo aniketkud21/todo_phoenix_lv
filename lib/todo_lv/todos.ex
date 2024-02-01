@@ -18,7 +18,7 @@ defmodule TodoLv.Todos do
 
   """
   def list_todos do
-    Repo.all(Todo)
+    Repo.all(Todo) |>Repo.preload(:user)
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule TodoLv.Todos do
       ** (Ecto.NoResultsError)
 
   """
-  def get_todo!(id), do: Repo.get!(Todo, id)
+  def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user)
 
   @doc """
   Creates a todo.
@@ -111,6 +111,8 @@ defmodule TodoLv.Todos do
     |> where([t], ilike(t.title, ^search_query))
     #|> limit(5)
     |> Repo.all()
+    |> Repo.preload(:user)
+
   end
 end
 

@@ -1,17 +1,22 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  alias TodoLv.Accounts
   use TodoLvWeb, :live_view
 
   alias TodoLv.Todos
   alias TodoLv.Todos.Todo
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     # {:ok, stream(socket, :todos, Todos.list_todos())}
+    user = Accounts.get_user_by_session_token(session["user_token"])
+    IO.inspect(user)
+    #user_id = user.id
+    # IO.inspect(Todos.list_todos)
     {:ok,
    socket
-   |> stream(:todos, Todos.list_todos())
-   |> assign(searchForm: to_form(%{default_value: ""}))}
-
+   |> stream(:todos, user.todos)
+   |> assign(searchForm: to_form(%{default_value: ""}))
+   |> assign(:user, user)}
   end
 
   @impl true
@@ -20,12 +25,16 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    IO.inspect(id)
+    #IO.inspect(socket, label: "Edit")
+    IO.inspect(Todos.get_todo!(id), label: "User in Edit")
     socket
     |> assign(:page_title, "Edit Todo")
     |> assign(:todo, Todos.get_todo!(id))
   end
 
   defp apply_action(socket, :new, _params) do
+    # IO.inspect(socket, label: "Socket Data")
     socket
     |> assign(:page_title, "New Todo")
     |> assign(:todo, %Todo{})
@@ -58,28 +67,34 @@ defmodule TodoLvWeb.TodoLive.Index do
     #updatedMap = Map.update!(todo, :like, fn x-> !x end) |> IO.inspect()
     #Todos.change_todo(updatedMap)
 
-    Todos.update_todo(todo , %{like: !todo.like})
-    IO.inspect(Todos.get_todo!(id), label: "HELLOSSSSSS")
-    # IO.inspect(socket)
+    updated_todo = Todos.update_todo(todo , %{like: !todo.like})
+    IO.inspect(updated_todo, label: "Updated todo")
+    # IO.inspect(Todos.get_todo!(id), label: "HELLOSSSSSS")
+
+    IO.inspect(socket)
     # Used stream instead of assign
-    {:noreply, stream(socket, :todos, Todos.list_todos)}
+    {:noreply, stream_insert(socket, :todos, Todos.get_todo!(id))}
     # Todos.update_todo(todo, {like: !(todo.like)})
   end
 
-  # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
-  @impl true
-  def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
-    IO.inspect(search_query)
-    #todos = Todos.search(search_query)
-    {:noreply, stream(socket, :todos, [], reset: true)}
-  end
+  # # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
+  # @impl true
+  # def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
+  #   IO.inspect(search_query)
+  #   #todos = Todos.search(search_query)
+  #   {:noreply, stream(socket, :todos, [], reset: true)}
+  # end
 
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
     IO.inspect(search_query)
+    # IO.inspect(socket)
     todos = Todos.search(search_query)
-    IO.inspect(todos)
-    {:noreply, stream(socket, :todos, todos, reset: true)}
+    filtered_todos = Enum.filter(todos, fn todo ->
+      todo.user_id == socket.assigns.user.id
+    end)
+    IO.inspect(todos, label: "Search Todos")
+    {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
   end
 
   # def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do
