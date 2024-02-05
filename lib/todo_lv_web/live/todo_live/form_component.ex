@@ -22,7 +22,9 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         <.input field={@form[:title]} type="text" label="Title" phx-debounce="500"/>
         <.input field={@form[:desc]} type="text" label="Desc" phx-debounce="500"/>
         <.input field={@form[:status]} type="text" label="Status" phx-debounce="500"/>
+        <.input field={@form[:category_id]} type="select" options={@categories} label="Category"/>
         <.input field={@form[:like]} type="checkbox" label="Like" phx-debounce="500"/>
+
         <:actions>
           <.button phx-disable-with="Saving...">Save Todo</.button>
         </:actions>
@@ -43,6 +45,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"todo" => todo_params}, socket) do
+    IO.inspect(todo_params)
     changeset =
       socket.assigns.todo
       |> Todos.change_todo(todo_params)

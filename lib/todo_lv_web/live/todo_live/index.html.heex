@@ -22,6 +22,7 @@
     <:col :let={{_id, todo}} label="Desc"><%= todo.desc %></:col>
     <:col :let={{_id, todo}} label="Status"><%= todo.status %></:col>
     <:col :let={{_id, todo}} label="Like"><%= todo.like %></:col>
+    <:col :let={{_id, todo}} label="Category"><%= todo.category.name%></:col>
     <:action :let={{_id, todo}}>
       <div class="sr-only">
         <.link navigate={~p"/todos/#{todo}"}>Show</.link>
@@ -43,21 +44,16 @@
     </:action>
 </.table>  
 
-<.link phx-click="prev">
-  prev
-</.link>
-
+<.button phx-click="prev">prev</.button>
 <%= @page_number %>
-
-<.link phx-click="next">
-  next
-</.link>
+<.button phx-click="next">next</.button>
 
 <.modal :if={@live_action in [:new, :edit]} id="todo-modal" show on_cancel={JS.patch(~p"/todos")}>
   <.live_component
     module={TodoLvWeb.TodoLive.FormComponent}
     id={@todo.id || :new}
     current_user={@user}
+    categories={@category}
     title={@page_title}
     action={@live_action}
     todo={@todo}

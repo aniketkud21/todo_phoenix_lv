@@ -58,7 +58,7 @@ defmodule TodoLv.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload(:todos)
+  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload(todos: [:category])
 
   ## User registration
 
@@ -231,7 +231,7 @@ defmodule TodoLv.Accounts do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query) |> Repo.preload(:todos)
+    Repo.one(query) |> Repo.preload(todos: [:category])
   end
 
   @doc """

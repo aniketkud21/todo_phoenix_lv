@@ -18,7 +18,7 @@ defmodule TodoLv.Todos do
 
   """
   def list_todos do
-    Repo.all(Todo) |>Repo.preload(:user)
+    Repo.all(Todo) |>Repo.preload(:user) |> Repo.preload(:category)
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule TodoLv.Todos do
       ** (Ecto.NoResultsError)
 
   """
-  def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user)
+  def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category)
 
   @doc """
   Creates a todo.
@@ -112,7 +112,7 @@ defmodule TodoLv.Todos do
     #|> limit(5)
     |> Repo.all()
     |> Repo.preload(:user)
-
+    |> Repo.preload(:category)
   end
 end
 

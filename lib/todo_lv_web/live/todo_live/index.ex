@@ -1,4 +1,5 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  alias TodoLv.Categories
   alias TodoLv.Accounts
   use TodoLvWeb, :live_view
 
@@ -9,7 +10,13 @@ defmodule TodoLvWeb.TodoLive.Index do
   def mount(_params, session, socket) do
     # {:ok, stream(socket, :todos, Todos.list_todos())}
     user = Accounts.get_user_by_session_token(session["user_token"])
-    IO.inspect(user)
+    IO.inspect(user, label: "USER INSPECT")
+
+    categories = Categories.list_categories_temp()
+    # category_list = Enum.map(categories, fn category ->
+    #   category.name
+    # end)
+    IO.inspect(categories)
     #user_id = user.id
     # IO.inspect(Todos.list_todos)
     {:ok,
@@ -17,7 +24,8 @@ defmodule TodoLvWeb.TodoLive.Index do
    #|> stream(:todos, user.todos)
    |> assign(searchForm: to_form(%{default_value: ""}))
    |> assign(:user, user)
-   |> assign(:page_number, 1)}
+   |> assign(:page_number, 1)
+   |> assign(:category, categories)}
   end
 
   @impl true
@@ -42,19 +50,25 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
-    sorted_todos = socket.assigns.user.todos
-    |> Enum.sort_by(&(&1.updated_at), Date)
-    |> Enum.reverse()
-    |> Enum.slice(socket.assigns.page_number*2 , 2)
+    # sorted_todos = socket.assigns.user.todos
+    # |> Enum.sort_by(&(&1.updated_at), Date)
+    # |> Enum.reverse()
+    # |> Enum.slice(socket.assigns.page_number*4 , 4)
 
+    paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+    IO.inspect(paginated_todos, label: "sjss")
     socket
     |> assign(:page_title, "Listing Todos")
-    |> stream(:todos, sorted_todos)
+    |> stream(:todos, paginated_todos)
   end
 
   @impl true
   def handle_info({TodoLvWeb.TodoLive.FormComponent, {:saved, todo}}, socket) do
-    {:noreply, stream_insert(socket, :todos, todo)}
+    # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+    {:noreply,
+    socket
+    |> stream_insert(:todos, todo)}
+    # |> stream(:todos, paginated_todos)}
   end
 
   @impl true
@@ -107,12 +121,14 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   # # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
-  # @impl true
-  # def handle_event("searchTodo", %{"_target" => ["default_value"], "" => search_query}, socket) do
-  #   IO.inspect(search_query)
-  #   #todos = Todos.search(search_query)
-  #   {:noreply, stream(socket, :todos, [], reset: true)}
-  # end
+  @impl true
+  def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => ""}, socket) do
+    # IO.inspect(search_query)
+    IO.inspect("Empty search")
+    #todos = Todos.search(search_query)
+    paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+    {:noreply, stream(socket, :todos, paginated_todos, reset: true)}
+  end
 
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
@@ -122,7 +138,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     filtered_todos = Enum.filter(todos, fn todo ->
       todo.user_id == socket.assigns.user.id
     end)
-    IO.inspect(todos, label: "Search Todos")
+    # IO.inspect(todos, label: "Search Todos")
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
   end
 
@@ -130,7 +146,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     socket.assigns.user.todos
     |> Enum.sort_by(&(&1.updated_at), Date)
     |> Enum.reverse()
-    |> Enum.slice((current_page_number-1) * 2 , 2)
+    |> Enum.slice((current_page_number-1) * 4 , 4)
   end
 
   # def handle_event("searchTodo", %{"default_value" => searchEntry}, socket) do

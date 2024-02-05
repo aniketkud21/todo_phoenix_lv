@@ -8,6 +8,7 @@ defmodule TodoLv.Todos.Todo do
     field :desc, :string
     field :like, :boolean, default: false
     belongs_to :user, TodoLv.Accounts.User
+    belongs_to :category, TodoLv.Categories.Category
 
     timestamps(type: :utc_datetime)
   end
@@ -15,7 +16,7 @@ defmodule TodoLv.Todos.Todo do
   @doc false
   def changeset(todo, attrs) do
     todo
-    |> cast(attrs, [:title, :desc, :status, :like, :user_id])
-    |> validate_required([:title, :desc, :status, :like, :user_id])
+    |> cast(attrs, [:title, :desc, :status, :like, :user_id, :category_id])
+    |> validate_required([:title, :desc, :status, :like, :user_id, :category_id])
   end
 end
