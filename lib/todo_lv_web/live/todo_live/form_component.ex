@@ -21,9 +21,9 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
       >
         <.input field={@form[:title]} type="text" label="Title" phx-debounce="500"/>
         <.input field={@form[:desc]} type="text" label="Desc" phx-debounce="500"/>
-        <.input field={@form[:status]} type="text" label="Status" phx-debounce="500"/>
+        <.input field={@form[:status]} type="select" options={["Hold", "In-Progress", "Complete"]} label="Status"/>
         <.input field={@form[:category_id]} type="select" options={@categories} label="Category"/>
-        <.input field={@form[:like]} type="checkbox" label="Like" phx-debounce="500"/>
+        <.input field={@form[:like]} type="checkbox" label="Like"/>
 
         <:actions>
           <.button phx-disable-with="Saving...">Save Todo</.button>
@@ -35,6 +35,9 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def update(%{todo: todo} = assigns, socket) do
+    # todo
+    # |> Map.put("user_id" , socket.assigns.current_user.id)
+
     changeset = Todos.change_todo(todo)
 
     {:ok,
@@ -45,7 +48,11 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"todo" => todo_params}, socket) do
-    IO.inspect(todo_params)
+    # IO.inspect(socket.assigns.current_user)
+    todo_params = todo_params
+    |> Map.put_new("user_id" , socket.assigns.current_user.id)
+
+    IO.inspect(todo_params, label: "In validate")
     changeset =
       socket.assigns.todo
       |> Todos.change_todo(todo_params)
@@ -55,12 +62,16 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   def handle_event("save", %{"todo" => todo_params}, socket) do
-    IO.inspect(socket, label: "Socket on save")
-    updated_todo_params = Map.put_new(todo_params, "user_id" , socket.assigns.current_user.id)
-    save_todo(socket, socket.assigns.action, updated_todo_params)
+    todo_params = todo_params
+    |> Map.put_new("user_id" , socket.assigns.current_user.id)
+
+    IO.inspect(todo_params, label: "Socket on save")
+
+    save_todo(socket, socket.assigns.action, todo_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do
+
     case Todos.update_todo(socket.assigns.todo, todo_params) do
       {:ok, todo} ->
         notify_parent({:saved, todo})
@@ -76,10 +87,11 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   defp save_todo(socket, :new, todo_params) do
+    IO.inspect(socket.assigns, label: "Link from form")
     case Todos.create_todo(todo_params) do
       {:ok, todo} ->
         notify_parent({:saved, todo})
-
+        IO.inspect(socket)
         {:noreply,
          socket
          |> put_flash(:info, "Todo created successfully")
