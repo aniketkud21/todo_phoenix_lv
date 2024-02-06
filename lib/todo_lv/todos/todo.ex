@@ -9,6 +9,7 @@ defmodule TodoLv.Todos.Todo do
     field :like, :boolean, default: false
     belongs_to :user, TodoLv.Accounts.User
     belongs_to :category, TodoLv.Categories.Category
+    has_many :subtasks, TodoLv.Subtasks.Subtask
 
     timestamps(type: :utc_datetime)
   end

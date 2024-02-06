@@ -11,6 +11,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     user = Accounts.get_user_by_session_token(session["user_token"])
 
     categories = Categories.list_categories_temp()
+    IO.inspect("hello")
     {:ok,
    socket
    #|> stream(:todos, user.todos)

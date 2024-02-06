@@ -37,6 +37,8 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   def update(%{todo: todo} = assigns, socket) do
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
+    IO.inspect(todo)
+    IO.inspect(assigns, label: "Assigns in new todo")
 
     changeset = Todos.change_todo(todo)
 
@@ -48,7 +50,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"todo" => todo_params}, socket) do
-    # IO.inspect(socket.assigns.current_user)
     todo_params = todo_params
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
 
@@ -103,7 +104,9 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset))
+    socket
+    |> assign(:form, to_form(changeset))
+    |> assign(:subtaskform, to_form(changeset))
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

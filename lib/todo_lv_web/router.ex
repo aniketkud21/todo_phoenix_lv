@@ -28,6 +28,8 @@ defmodule TodoLvWeb.Router do
 
     live "/todos/:id", TodoLive.Show, :show
     live "/todos/:id/show/edit", TodoLive.Show, :edit
+
+    live "/todos/:id/new", TodoLive.Show, :new
   end
 
   # Other scopes may use custom stacks.
