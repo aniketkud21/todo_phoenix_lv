@@ -79,7 +79,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Todo updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.navigate)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -95,7 +95,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Todo created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.navigate)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

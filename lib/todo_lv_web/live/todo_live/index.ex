@@ -48,9 +48,6 @@ defmodule TodoLvWeb.TodoLive.Index do
   @impl true
   def handle_info({TodoLvWeb.TodoLive.FormComponent, {:saved, todo}}, socket) do
     # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
-    IO.inspect(todo, label: "In Hanfle info")
-    todo = TodoLv.Repo.preload(todo, [:user, :category])
-    IO.inspect(todo, label: "In Hanfle info2")
     {:noreply,
     socket
     |> stream_insert(:todos, todo)}
