@@ -73,41 +73,37 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
     save_todo(socket, socket.assigns.action, subtask_params)
   end
 
-  defp save_todo(socket, :edit, todo_params) do
-
-    case Todos.update_todo(socket.assigns.todo, todo_params) do
-      {:ok, todo} ->
-        notify_parent({:saved, todo})
+  defp save_todo(socket, :edit, subtask_params) do
+    case Subtasks.update_subtask(socket.assigns.subtask, subtask_params) do
+      {:ok, subtask} ->
+        notify_parent({:saved, subtask})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Todo updated successfully")
+         |> put_flash(:info, "Subtask updated successfully")
          |> push_navigate(to: socket.assigns.navigate)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect("IN ERRRORR")
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
   defp save_todo(socket, :new, subtask_params) do
-    IO.inspect(socket.assigns, label: "Link from form")
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
         notify_parent({:saved, subtask})
-        IO.inspect(socket)
         {:noreply,
          socket
-         |> put_flash(:info, "Todo created successfully")
+         |> put_flash(:info, "Subtask created successfully")
          |> push_navigate(to: socket.assigns.navigate)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect("In ERROR ROUTE")
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    IO.inspect(changeset, label: "cg")
     assign(socket, :subTaskForm, to_form(changeset))
   end
 

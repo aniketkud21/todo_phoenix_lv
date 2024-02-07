@@ -53,7 +53,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     todo_params = todo_params
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
 
-    IO.inspect(todo_params, label: "In validate")
+    # IO.inspect(todo_params, label: "In validate")
     changeset =
       socket.assigns.todo
       |> Todos.change_todo(todo_params)
@@ -67,12 +67,12 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
 
     IO.inspect(todo_params, label: "Socket on save")
-
+    IO.inspect(socket.assigns.action)
     save_todo(socket, socket.assigns.action, todo_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do
-
+    IO.inspect("ssp")
     case Todos.update_todo(socket.assigns.todo, todo_params) do
       {:ok, todo} ->
         notify_parent({:saved, todo})

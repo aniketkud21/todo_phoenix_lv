@@ -15,23 +15,22 @@
     <:col :let={{_id, subtask}} label="Title"><%= subtask.title %></:col>
     <:col :let={{_id, subtask}} label="Desc"><%= subtask.desc %></:col>
     <:col :let={{_id, subtask}} label="Status"><%= subtask.status %></:col>
-    
+    <:action :let={{_id, subtask}}>
+      <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{id, subtask}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: subtask.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
 </.table>
 
 <.back navigate={~p"/todos"}>Back to todos</.back>
 
-<.modal :if={@live_action == :edit} id="todo-modal" show on_cancel={JS.patch(~p"/todos/#{@todo}")}>
-  <.live_component
-    module={TodoLvWeb.TodoLive.FormComponent}
-    id={@todo.id}
-    title={@page_title}
-    action={@live_action}
-    todo={@todo}
-    patch={~p"/todos/#{@todo}"}
-  />
-</.modal>
-
-<.modal :if={@live_action == :new} id="subtask-modal" show on_cancel={JS.patch(~p"/todos/#{@todo}")}>
+<.modal :if={@live_action in [:new, :edit]} id="subtask-modal" show on_cancel={JS.patch(~p"/todos/#{@todo}")}>
   <.live_component
     module={TodoLvWeb.TodoLive.SubtaskFormComponent}
     id={@todo.id || :new}
