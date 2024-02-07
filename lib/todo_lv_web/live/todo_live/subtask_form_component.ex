@@ -2,7 +2,6 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   use TodoLvWeb, :live_component
 
   alias TodoLv.Subtasks
-  alias TodoLv.Todos
 
   @impl true
   def render(assigns) do

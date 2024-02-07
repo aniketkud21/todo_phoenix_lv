@@ -19,18 +19,28 @@ defmodule TodoLvWeb.TodoLive.Show do
   defp apply_action(socket, :show, params) do
     %{"id" => id} = params
     subtasks = Todos.get_todo!(id).subtasks
-    socket
+
+    IO.inspect(socket, label: "Stream data before")
+
+    socket = socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:todo, Todos.get_todo!(id))
     |> stream(:subtasks, subtasks)
+
+    IO.inspect(socket, label: "Stream data after for delete")
+
+    socket
   end
 
   defp apply_action(socket, :new, params) do
     IO.inspect(params, label: "from new apply action")
     IO.inspect(%Subtask{}, label: "Empty struct")
-    socket
+    socket = socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:subtask, %Subtask{})
+
+
+    socket
   end
 
   defp apply_action(socket, :edit, params) do
@@ -46,7 +56,10 @@ defmodule TodoLvWeb.TodoLive.Show do
     subtask = Subtasks.get_subtask!(id)
     {:ok, _} = Subtasks.delete_subtask(subtask)
 
-    {:noreply, stream_delete(socket, :subtasks, subtask)}
+    IO.inspect(socket.assigns.streams, label: "before")
+    x = stream_delete(socket, :subtasks, subtask)
+    IO.inspect(socket.assigns.streams, label: "after")
+    {:noreply, x}
   end
 
   defp page_title(:new), do: "New SubTask"

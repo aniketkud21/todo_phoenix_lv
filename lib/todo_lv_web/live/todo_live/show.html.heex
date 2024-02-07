@@ -20,7 +20,7 @@
     </:action>
     <:action :let={{id, subtask}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: subtask.id}) |> hide("##{id}")}
+        phx-click={JS.push("delete", value: %{id: subtask.id})}
         data-confirm="Are you sure?"
       >
         Delete
