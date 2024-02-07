@@ -48,11 +48,9 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_info({TodoLvWeb.TodoLive.FormComponent, {:saved, todo}}, socket) do
-    # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
     {:noreply,
     socket
     |> stream_insert(:todos, todo)}
-    # |> stream(:todos, paginated_todos)}
   end
 
   @impl true
@@ -85,44 +83,25 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> stream(:todos, paginated_todos, reset: true)}
   end
 
-
-  # -------------------------
   @impl true
   def handle_event("heartpress", %{"id" => id}, socket) do
     todo = Todos.get_todo!(id)
-    IO.inspect(todo, label: "fIRST")
-    #updatedMap = Map.update!(todo, :like, fn x-> !x end) |> IO.inspect()
-    #Todos.change_todo(updatedMap)
-
-    updated_todo = Todos.update_todo(todo , %{like: !todo.like})
-    IO.inspect(updated_todo, label: "Updated todo")
-    # IO.inspect(Todos.get_todo!(id), label: "HELLOSSSSSS")
-
-
-    # Used stream instead of assign
-    {:noreply, stream_insert(socket, :todos, Todos.get_todo!(id))}
-    # Todos.update_todo(todo, {like: !(todo.like)})
+    {:ok, updated_todo} = Todos.update_todo(todo , %{like: !todo.like})
+    {:noreply, stream_insert(socket, :todos, updated_todo)}
   end
 
-  # # --------------------------  %{"_target" => ["default_value"], "default_value" => "s"}
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => ""}, socket) do
-    # IO.inspect(search_query)
-    IO.inspect("Empty search")
-    #todos = Todos.search(search_query)
     paginated_todos = handle_pagination(socket, socket.assigns.page_number)
     {:noreply, stream(socket, :todos, paginated_todos, reset: true)}
   end
 
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
-    IO.inspect(search_query)
-    # IO.inspect(socket)
     todos = Todos.search(search_query)
     filtered_todos = Enum.filter(todos, fn todo ->
       todo.user_id == socket.assigns.user.id
     end)
-    # IO.inspect(todos, label: "Search Todos")
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
   end
 
