@@ -95,9 +95,14 @@
 
 <br>
 
-<.button phx-click="prev">prev</.button>
+<%= if(@page_number > 1) do  %>
+  <.button phx-click="prev">prev</.button>
+<% end %>
 <%= @page_number %>
-<.button phx-click="next">next</.button>
+<%= if(@page_number < @max_page_number) do %>
+  <.button phx-click="next">next</.button>
+<% end %>
+
 
 <.modal :if={@live_action in [:new, :edit]} id="todo-modal" show on_cancel={JS.patch(~p"/todos")}>
   <.live_component

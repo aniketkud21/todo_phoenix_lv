@@ -14,7 +14,6 @@ defmodule TodoLvWeb.TodoLive.Index do
     IO.inspect("hello")
     {:ok,
    socket
-   #|> stream(:todos, user.todos)
    |> assign(searchForm: to_form(%{default_value: ""}))
    |> assign(:user, user)
    |> assign(:page_number, 1)
@@ -42,9 +41,21 @@ defmodule TodoLvWeb.TodoLive.Index do
   defp apply_action(socket, :index, _params) do
     paginated_todos = handle_pagination(socket, socket.assigns.page_number)
 
-    socket
-    |> assign(:page_title, "Listing Todos")
-    |> stream(:todos, paginated_todos)
+    max_page_no = div(length(socket.assigns.user.todos),4)
+
+    if(rem(length(socket.assigns.user.todos),4) == 0) do
+
+      socket
+      |> assign(:page_title, "Listing Todos")
+      |> assign(:max_page_number, max_page_no)
+      |> stream(:todos, paginated_todos)
+    else
+
+      socket
+      |> assign(:page_title, "Listing Todos")
+      |> assign(:max_page_number, max_page_no + 1)
+      |> stream(:todos, paginated_todos)
+    end
   end
 
   @impl true
@@ -95,7 +106,6 @@ defmodule TodoLvWeb.TodoLive.Index do
   def handle_event("bookmarkpress", _unsigned_paramz, socket) do
     IO.inspect("in bookmarls")
 
-
     if(socket.assigns.toggle_bookmark == false) do
       bookmarked_todos = Enum.filter(socket.assigns.user.todos, fn todo ->
         todo.like == true
@@ -131,8 +141,6 @@ defmodule TodoLvWeb.TodoLive.Index do
       todo.user_id == socket.assigns.user.id
     end)
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
-
-    # {:noreply, socket}
   end
 
   @impl true
