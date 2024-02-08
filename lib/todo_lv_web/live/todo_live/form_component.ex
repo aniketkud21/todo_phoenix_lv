@@ -53,7 +53,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     todo_params = todo_params
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
 
-    # IO.inspect(todo_params, label: "In validate")
+    #IO.inspect(todo_params, label: "In validate")
     changeset =
       socket.assigns.todo
       |> Todos.change_todo(todo_params)

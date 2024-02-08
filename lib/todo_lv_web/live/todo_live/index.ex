@@ -115,8 +115,6 @@ defmodule TodoLvWeb.TodoLive.Index do
       |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
       |> stream(:todos, paginated_todos, reset: true)}
     end
-
-
   end
 
   @impl true
@@ -128,14 +126,34 @@ defmodule TodoLvWeb.TodoLive.Index do
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
     todos = Todos.search(search_query)
+    IO.inspect(todos, label: "Search todos")
     filtered_todos = Enum.filter(todos, fn todo ->
       todo.user_id == socket.assigns.user.id
     end)
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
+
+    # {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filterTodos", %{"_target" => ["status"], "status" => status}, socket) do
+    IO.inspect(status)
+
+    if(status == "all") do
+      paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+
+      {:noreply,
+      socket
+      |> stream(:todos, paginated_todos, reset: true)}
+    else
+      filteredTodos = Enum.filter(socket.assigns.user.todos, fn todo ->
+        todo.status == status
+      end)
+      {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
+    end
   end
 
   defp handle_pagination(socket, current_page_number) do
-    IO.inspect(socket.assigns.user.todos, label: "ALL TODOS")
     socket.assigns.user.todos
     |> Enum.sort_by(&(&1.updated_at), Date)
     |> Enum.reverse()

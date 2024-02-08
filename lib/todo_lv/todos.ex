@@ -117,6 +117,7 @@ defmodule TodoLv.Todos do
     |> Repo.all()
     |> Repo.preload(:user)
     |> Repo.preload(:category)
+    |> Repo.preload(:subtasks)
   end
 end
 
