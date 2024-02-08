@@ -18,6 +18,7 @@ defmodule TodoLvWeb.TodoLive.Index do
    |> assign(searchForm: to_form(%{default_value: ""}))
    |> assign(:user, user)
    |> assign(:page_number, 1)
+   |> assign(:toggle_bookmark, false)
    |> assign(:category, categories)}
   end
 
@@ -88,6 +89,34 @@ defmodule TodoLvWeb.TodoLive.Index do
     todo = Todos.get_todo!(id)
     {:ok, updated_todo} = Todos.update_todo(todo , %{like: !todo.like})
     {:noreply, stream_insert(socket, :todos, updated_todo)}
+  end
+
+  @impl true
+  def handle_event("bookmarkpress", _unsigned_paramz, socket) do
+    IO.inspect("in bookmarls")
+
+
+    if(socket.assigns.toggle_bookmark == false) do
+      bookmarked_todos = Enum.filter(socket.assigns.user.todos, fn todo ->
+        todo.like == true
+      end)
+
+      IO.inspect(bookmarked_todos, label: "btodos")
+
+      {:noreply,
+      socket
+      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
+      |> stream(:todos, bookmarked_todos, reset: true)}
+    else
+      paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+
+      {:noreply,
+      socket
+      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
+      |> stream(:todos, paginated_todos, reset: true)}
+    end
+
+
   end
 
   @impl true
