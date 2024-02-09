@@ -21,7 +21,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
       >
         <.input field={@form[:title]} type="text" label="Title" phx-debounce="500"/>
         <.input field={@form[:desc]} type="text" label="Desc" phx-debounce="500"/>
-        <.input field={@form[:status]} type="select" options={["Hold", "In-Progress", "Complete"]} label="Status"/>
+        <.input field={@form[:status]} type="select" options={@options} label="Status"/>
         <.input field={@form[:category_id]} type="select" options={@categories} label="Category"/>
         <.input field={@form[:like]} type="checkbox" label="Like"/>
 
@@ -53,7 +53,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     todo_params = todo_params
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
 
-    #IO.inspect(todo_params, label: "In validate")
     changeset =
       socket.assigns.todo
       |> Todos.change_todo(todo_params)
@@ -88,7 +87,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   defp save_todo(socket, :new, todo_params) do
-    IO.inspect(socket.assigns, label: "Link from form")
     case Todos.create_todo(todo_params) do
       {:ok, todo} ->
         notify_parent({:saved, todo})

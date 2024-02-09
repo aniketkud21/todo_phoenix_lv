@@ -8,10 +8,11 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def mount(_params, session, socket) do
+    IO.inspect(socket, label: "on mount")
     user = Accounts.get_user_by_session_token(session["user_token"])
 
     categories = Categories.list_categories_temp()
-    IO.inspect("hello")
+
     {:ok,
    socket
    |> assign(searchForm: to_form(%{default_value: ""}))
@@ -27,9 +28,16 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    todo = Todos.get_todo!(id)
+    subtasks = todo.subtasks
+    # IO.inspect("IN edit")
+    options = helper(subtasks)
+    IO.inspect(options, label: "Options")
+
     socket
     |> assign(:page_title, "Edit Todo")
     |> assign(:todo, Todos.get_todo!(id))
+    |> assign(:options, options)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -104,8 +112,6 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("bookmarkpress", _unsigned_paramz, socket) do
-    IO.inspect("in bookmarls")
-
     if(socket.assigns.toggle_bookmark == false) do
       bookmarked_todos = Enum.filter(socket.assigns.user.todos, fn todo ->
         todo.like == true
@@ -166,5 +172,20 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> Enum.sort_by(&(&1.updated_at), Date)
     |> Enum.reverse()
     |> Enum.slice((current_page_number-1) * 4 , 4)
+  end
+
+  defp helper(subtasks) do
+    status_list = Enum.map(subtasks, fn subtask ->
+      subtask.status
+    end)
+
+    IO.inspect(status_list, label: "oNLY STATUS")
+    cond do
+      length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"]
+      "In-Progress" in status_list -> ["In-Progress"]
+      Enum.all?(status_list, fn status -> status=="Hold" end) -> ["Hold"]
+      Enum.all?(status_list, fn status -> status=="Complete" end) -> ["Complete"]
+      true -> ["Hold"]
+    end
   end
 end

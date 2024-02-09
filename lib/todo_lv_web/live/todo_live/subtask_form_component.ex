@@ -33,7 +33,7 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
   @impl true
   def update(%{subtask: subtask} = assigns, socket) do
-    IO.inspect(assigns, label: "Assigns of update")
+    # IO.inspect(assigns, label: "Assigns of update")
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
 
@@ -47,19 +47,15 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
   @impl true
   def handle_event("validate", %{"subtask" => subtask_params}, socket) do
-    # IO.inspect(socket.assigns.current_user)
-    IO.inspect(socket.assigns.todo.id, label: "id of todo")
+
     subtask_params = subtask_params
     |> Map.put_new("todo_id" , socket.assigns.todo.id)
-    # IO.inspect(subtask_params, label: "subtask params")
 
-    IO.inspect(subtask_params, label: "In validate")
     changeset =
       socket.assigns.subtask
       |> Subtasks.change_subtask(subtask_params)
       |> Map.put(:action, :validate)
 
-    IO.inspect(changeset, label: "Second call")
     {:noreply, assign_form(socket, changeset)}
   end
 
@@ -75,12 +71,12 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_todo(socket, :edit, subtask_params) do
     case Subtasks.update_subtask(socket.assigns.subtask, subtask_params) do
       {:ok, subtask} ->
-        notify_parent({:saved, subtask})
+        notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
 
         {:noreply,
          socket
          |> put_flash(:info, "Subtask updated successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
+         |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect("IN ERRRORR")
@@ -91,11 +87,11 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_todo(socket, :new, subtask_params) do
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
-        notify_parent({:saved, subtask})
+        notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
         {:noreply,
          socket
          |> put_flash(:info, "Subtask created successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
+         |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

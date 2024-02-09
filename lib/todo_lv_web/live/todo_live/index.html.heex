@@ -99,6 +99,7 @@
   <.button phx-click="prev">prev</.button>
 <% end %>
 <%= @page_number %>
+
 <%= if(@page_number < @max_page_number) do %>
   <.button phx-click="next">next</.button>
 <% end %>
@@ -110,6 +111,7 @@
     id={@todo.id || :new}
     current_user={@user}
     categories={@category}
+    options={@options}
     title={@page_title}
     action={@live_action}
     todo={@todo}

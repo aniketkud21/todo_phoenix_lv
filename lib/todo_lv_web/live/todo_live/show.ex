@@ -12,7 +12,6 @@ defmodule TodoLvWeb.TodoLive.Show do
 
   @impl true
   def handle_params(params, _, socket) do
-    IO.inspect(params)
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
@@ -20,27 +19,16 @@ defmodule TodoLvWeb.TodoLive.Show do
     %{"id" => id} = params
     subtasks = Todos.get_todo!(id).subtasks
 
-    IO.inspect(socket, label: "Stream data before")
-
-    socket = socket
+    socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:todo, Todos.get_todo!(id))
     |> stream(:subtasks, subtasks)
-
-    IO.inspect(socket, label: "Stream data after for delete")
-
-    socket
   end
 
-  defp apply_action(socket, :new, params) do
-    IO.inspect(params, label: "from new apply action")
-    IO.inspect(%Subtask{}, label: "Empty struct")
-    socket = socket
+  defp apply_action(socket, :new, _params) do
+    socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:subtask, %Subtask{})
-
-
-    socket
   end
 
   defp apply_action(socket, :edit, params) do
@@ -48,6 +36,21 @@ defmodule TodoLvWeb.TodoLive.Show do
     socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:subtask, Subtasks.get_subtask!(subtask_id))
+  end
+
+  @impl true
+  def handle_info({TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}}, socket) do
+    IO.inspect("in hadnle event of subtask")
+
+    todo = Todos.get_todo!(todo_id)
+    subtasks = todo.subtasks
+    list = helper(subtasks)
+
+    Todos.update_todo(todo, %{status: Enum.at(list, 0)})
+    
+    {:noreply,
+    socket
+    |> stream_insert(:subtasks, subtask)}
   end
 
   @impl true
@@ -60,6 +63,21 @@ defmodule TodoLvWeb.TodoLive.Show do
     x = stream_delete(socket, :subtasks, subtask)
     IO.inspect(socket.assigns.streams, label: "after")
     {:noreply, x}
+  end
+
+  defp helper(subtasks) do
+    status_list = Enum.map(subtasks, fn subtask ->
+      subtask.status
+    end)
+
+    IO.inspect(status_list, label: "oNLY STATUS")
+    cond do
+      length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"]
+      "In-Progress" in status_list -> ["In-Progress"]
+      Enum.all?(status_list, fn status -> status=="Hold" end) -> ["Hold"]
+      Enum.all?(status_list, fn status -> status=="Complete" end) -> ["Complete"]
+      true -> ["Hold"]
+    end
   end
 
   defp page_title(:new), do: "New SubTask"
