@@ -37,9 +37,8 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   def update(%{todo: todo} = assigns, socket) do
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
-    IO.inspect(todo)
-    IO.inspect(assigns, label: "Assigns in new todo")
-
+    # IO.inspect(todo)
+    # IO.inspect(assigns, label: "Assigns in new todo")
     changeset = Todos.change_todo(todo)
 
     {:ok,

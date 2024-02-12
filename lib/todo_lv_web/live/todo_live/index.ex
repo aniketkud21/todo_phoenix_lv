@@ -40,6 +40,19 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> assign(:options, options)
   end
 
+  defp apply_action(socket, :share, %{"id" => id}) do
+    # todo = Todos.get_todo!(id)
+    # subtasks = todo.subtasks
+    # # IO.inspect("IN edit")
+    # options = helper(subtasks)
+    # IO.inspect(options, label: "Options")
+    IO.inspect("in share")
+    socket
+    |> assign(:page_title, "Share Todo")
+    |> assign(:todo, Todos.get_todo!(id))
+    # |> assign(shareform: to_form(%{status: "Viewer"}))
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Todo")
@@ -151,7 +164,8 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("filterTodos", %{"_target" => ["status"], "status" => status}, socket) do
-    IO.inspect(status)
+    # %{"_target" => ["status"], "status" => status}
+    #IO.inspect(params)
 
     if(status == "all") do
       paginated_todos = handle_pagination(socket, socket.assigns.page_number)
@@ -165,6 +179,15 @@ defmodule TodoLvWeb.TodoLive.Index do
       end)
       {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
     end
+    # {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filterTodosByCategory", %{"_target" => ["category"], "category" => category}, socket) do
+    filteredTodos = Enum.filter(socket.assigns.user.todos, fn todo ->
+      todo.category.name == category
+    end)
+    {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
   end
 
   defp handle_pagination(socket, current_page_number) do

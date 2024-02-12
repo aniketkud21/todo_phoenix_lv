@@ -8,6 +8,15 @@
   
 </.header>
 
+<div>
+  <.list>
+    <:item title="Title"><%= @todo.title %></:item>
+    <:item title="Desc"><%= @todo.desc %></:item>
+    <:item title="Status"><%= @todo.status %></:item>
+    <:item title="Like"><%= @todo.like %></:item>
+  </.list>
+</div>
+
 <.table
     id="subtasks"
     rows={@streams.subtasks}

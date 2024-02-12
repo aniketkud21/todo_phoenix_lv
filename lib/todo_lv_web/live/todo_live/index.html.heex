@@ -30,17 +30,29 @@
   </div>
 
   <div>
-    <form phx-change="filterTodos">
-      <input type="radio" id="all" name="status" value="all" >
-      <label for="completed">All</label>
-      <input type="radio" id="completed" name="status" value="Complete" >
-      <label for="completed">Completed</label>
-      <input type="radio" id="inprogress" name="status" value="In-progress" >
-      <label for="inprogress">In Progress</label>
-      <input type="radio" id="onhold" name="status" value="Hold">
-      <label for="onhold">On Hold</label>
-    </form>
+    <div>
+      <form phx-change="filterTodos">
+        <input type="checkbox" id="all" name="status" value="all" >
+        <label for="completed">All</label>
+        <input type="checkbox" id="completed" name="status" value="Complete" >
+        <label for="completed">Completed</label>
+        <input type="checkbox" id="inprogress" name="status" value="In-progress" >
+        <label for="inprogress">In Progress</label>
+        <input type="checkbox" id="onhold" name="status" value="Hold">
+        <label for="onhold">On Hold</label>
+
+        <input type="checkbox" id="study" name="status" value="Study" >
+        <label for="study">Study</label>
+        <input type="checkbox" id="household" name="status" value="Household" >
+        <label for="household">Household</label>
+        <input type="checkbox" id="work" name="status" value="Work">
+        <label for="work">Work</label>
+      </form>
+    </div>
+  
+   
   </div>
+  
 </div>
 
 <.table
@@ -83,6 +95,11 @@
         Edit
       </.link>
     </:action>
+    <:action :let={{_id, todo}}>
+      <.link patch={~p"/todos/#{todo}/share"}>
+        Share
+      </.link>
+    </:action>
     <:action :let={{id, todo}}>
       <.link
         phx-click={JS.push("delete", value: %{id: todo.id})}
@@ -112,6 +129,18 @@
     current_user={@user}
     categories={@category}
     options={@options}
+    title={@page_title}
+    action={@live_action}
+    todo={@todo}
+    navigate={~p"/todos"}
+  />
+</.modal>
+
+<.modal :if={@live_action == :share} id="share-modal" show on_cancel={JS.patch(~p"/todos")}>
+  <.live_component
+    module={TodoLvWeb.TodoLive.ShareFormComponent}
+    id={@todo.id || :new}
+    current_user={@user}
     title={@page_title}
     action={@live_action}
     todo={@todo}
