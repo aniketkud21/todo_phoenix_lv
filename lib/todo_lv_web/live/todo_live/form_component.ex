@@ -1,4 +1,6 @@
 defmodule TodoLvWeb.TodoLive.FormComponent do
+  alias TodoLv.Roles
+  alias TodoLv.Permissions
   use TodoLvWeb, :live_component
 
   alias TodoLv.Todos
@@ -88,6 +90,8 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   defp save_todo(socket, :new, todo_params) do
     case Todos.create_todo(todo_params) do
       {:ok, todo} ->
+        Permissions.create_permission(%{"todo_id" => todo.id, "user_id" => socket.assigns.current_user.id, "role_id" => Roles.get_role_by_name!("Creator").id})
+        
         notify_parent({:saved, todo})
         IO.inspect(socket)
         {:noreply,

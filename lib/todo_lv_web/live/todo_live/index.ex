@@ -1,4 +1,5 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  alias TodoLv.Roles
   alias TodoLv.Categories
   alias TodoLv.Accounts
   use TodoLvWeb, :live_view
@@ -19,7 +20,8 @@ defmodule TodoLvWeb.TodoLive.Index do
    |> assign(:user, user)
    |> assign(:page_number, 1)
    |> assign(:toggle_bookmark, false)
-   |> assign(:category, categories)}
+   |> assign(:category, categories)
+   |> assign(:options, helper([]))}
   end
 
   @impl true
@@ -30,7 +32,7 @@ defmodule TodoLvWeb.TodoLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     todo = Todos.get_todo!(id)
     subtasks = todo.subtasks
-    # IO.inspect("IN edit")
+
     options = helper(subtasks)
     IO.inspect(options, label: "Options")
 
@@ -41,15 +43,21 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :share, %{"id" => id}) do
-    # todo = Todos.get_todo!(id)
-    # subtasks = todo.subtasks
-    # # IO.inspect("IN edit")
-    # options = helper(subtasks)
-    # IO.inspect(options, label: "Options")
     IO.inspect("in share")
+
+    roles = Roles.list_roles()
+    |> Enum.filter(fn role ->
+      role.role_name != "Creator"
+    end)
+    |> Enum.map(fn role ->
+      role.role_name
+    end)
+
+    IO.inspect(roles, label: "aLL ROLES")
     socket
     |> assign(:page_title, "Share Todo")
     |> assign(:todo, Todos.get_todo!(id))
+    |> assign(:roles, roles)
     # |> assign(shareform: to_form(%{status: "Viewer"}))
   end
 

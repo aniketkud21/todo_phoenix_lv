@@ -17,7 +17,8 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@shareform[:status]} type="select" options={["Viewer", "Editor"]} label="Status"/>
+        <.input field={@shareform[:user_id]} type="text" label="User ID"/>
+        <.input field={@shareform[:role]} type="select" options={@roles} label="Role"/>
         <button>Share Todo</button>
       </.simple_form>
     </div>
@@ -32,12 +33,12 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     # IO.inspect(assigns, label: "Assigns in new todo")
 
     # changeset = Todos.change_todo(todo)
-    IO.inspect(assigns, label: "Shareform")
+    # IO.inspect(assigns, label: "Shareform")
     # IO.inspect(socket.assigns.todo)
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(shareform: to_form(%{status: "Viewer"}))}
+     |> assign(shareform: to_form(%{role: "", user_id: ""}))}
   end
 
   @impl true
