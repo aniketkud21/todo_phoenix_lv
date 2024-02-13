@@ -1,10 +1,14 @@
 <.header>
   Listing Subtasks of <%= @todo.title %>
-  <:actions>
-    <.link patch={~p"/todos/#{@todo}/new"}>
-      <.button>New Subtask</.button>
-    </.link>
-  </:actions>
+
+  
+    <:actions>
+      <%= if( @edit == true) do%>
+        <.link patch={~p"/todos/#{@todo}/new"}>
+          <.button>New Subtask</.button>
+        </.link>
+      <% end %>
+    </:actions>
   
 </.header>
 
@@ -17,6 +21,10 @@
   </.list>
 </div>
 
+<br>
+
+<.header>Subtasks</.header>
+
 <.table
     id="subtasks"
     rows={@streams.subtasks}
@@ -25,15 +33,19 @@
     <:col :let={{_id, subtask}} label="Desc"><%= subtask.desc %></:col>
     <:col :let={{_id, subtask}} label="Status"><%= subtask.status %></:col>
     <:action :let={{_id, subtask}}>
-      <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
+      <%= if( @edit == true) do%>
+        <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
+      <% end %>
     </:action>
     <:action :let={{id, subtask}}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: subtask.id})}
-        data-confirm="Are you sure?"
-      >
-        Delete
-      </.link>
+      <%= if( @edit == true) do%>
+        <.link
+          phx-click={JS.push("delete", value: %{id: subtask.id})}
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      <% end %>
     </:action>
 </.table>
 

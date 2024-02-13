@@ -1,4 +1,7 @@
 defmodule TodoLvWeb.TodoLive.ShareFormComponent do
+  alias TodoLv.Roles
+  alias TodoLv.Accounts
+  alias TodoLv.Permissions
   use TodoLvWeb, :live_component
 
   @impl true
@@ -15,11 +18,11 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         id="share-form"
         phx-target={@myself}
         phx-change="validate"
-        phx-submit="save"
+        phx-submit="share"
       >
-        <.input field={@shareform[:user_id]} type="text" label="User ID"/>
+        <.input field={@shareform[:email]} type="text" label="User Email"/>
         <.input field={@shareform[:role]} type="select" options={@roles} label="Role"/>
-        <button>Share Todo</button>
+        <.button>Share Todo</.button>
       </.simple_form>
     </div>
     """
@@ -27,54 +30,48 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
 
   @impl true
   def update(assigns, socket) do
-    # # todo
-    # # |> Map.put("user_id" , socket.assigns.current_user.id)
-    # IO.inspect(todo)
-    # IO.inspect(assigns, label: "Assigns in new todo")
-
-    # changeset = Todos.change_todo(todo)
-    # IO.inspect(assigns, label: "Shareform")
-    # IO.inspect(socket.assigns.todo)
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(shareform: to_form(%{role: "", user_id: ""}))}
+     |> assign(shareform: to_form(%{role: "", email: ""}))}
   end
 
   @impl true
   def handle_event("validate", params, socket) do
-
-    # %{"_target" => ["status"], "status" => "Viewer"}
-
-    # todo_params = todo_params
-    # |> Map.put_new("user_id" , socket.assigns.current_user.id)
-
-    # changeset =
-    #   socket.assigns.todo
-    #   |> Todos.change_todo(todo_params)
-    #   |> Map.put(:action, :validate)
-
     IO.inspect(params)
-
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("save", params, socket) do
-    # todo_params = todo_params
-    # |> Map.put_new("user_id" , socket.assigns.current_user.id)
+  def handle_event("share", %{"email" => email, "role" => role}, socket) do
+    #IO.inspect(params, label: "Save params")
+    user_id = Accounts.get_user_by_email(email)
+    role_id = Roles.get_role_by_name!(role)
 
-    # IO.inspect(todo_params, label: "Socket on save")
-    # IO.inspect(socket.assigns.action)
-    IO.inspect(params, label: "Save params")
-    {:noreply,
-    socket
-    |> put_flash(:info, "Todo shared successfully")
-    |> push_navigate(to: socket.assigns.navigate)}
+    IO.inspect(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email), "role_id" => Roles.get_role_by_name!(role)}, label: "to save struct")
+
+
+    if(user_id == nil || role_id == nil) do
+      {:noreply,
+        socket
+        |> put_flash(:error, "Todo not shared successfully")
+        |> push_navigate(to: socket.assigns.navigate)}
+    else
+      case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
+        {:ok, _permission} ->
+          {:noreply,
+          socket
+          |> put_flash(:info, "Todo shared successfully")
+          |> push_navigate(to: socket.assigns.navigate)}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          IO.inspect(changeset)
+          {:noreply,
+            socket
+            |> assign(shareform: to_form(%{role: "", email: ""}))}
+      end
+    end
   end
-
-
-
 end
 
 # defmodule TodoLvWeb.TodoLive.FormComponent do

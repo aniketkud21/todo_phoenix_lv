@@ -9,33 +9,24 @@ defmodule TodoLv.Permissions do
   alias TodoLv.Permissions.Permission
 
   @doc """
-  Returns the list of todos.
+  Gets a single permission.
+
+  Raises `Ecto.NoResultsError` if the Permission does not exist.
 
   ## Examples
 
-      iex> list_todos()
-      [%Todo{}, ...]
+      iex> get_permission!(123)
+      %Permission{}
+
+      iex> get_todo!(456)
+      ** (Ecto.NoResultsError)
 
   """
-  # def list_todos do
-  #   Repo.all(Todo) |> Repo.preload(:user) |> Repo.preload(:category)
-  # end
+  def get_permission_by_user_id!(user_id, todo_id) do
+    Repo.get_by!(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
+  end
 
-  # @doc """
-  # Gets a single todo.
-
-  # Raises `Ecto.NoResultsError` if the Todo does not exist.
-
-  # ## Examples
-
-  #     iex> get_todo!(123)
-  #     %Todo{}
-
-  #     iex> get_todo!(456)
-  #     ** (Ecto.NoResultsError)
-
-  # """
-  # def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)
+  #def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)
 
   @doc """
   Creates a permission.
@@ -55,26 +46,6 @@ defmodule TodoLv.Permissions do
     |> Permission.changeset(attrs)
     |> Repo.insert()
   end
-
-  @doc """
-  Updates a todo.
-
-  ## Examples
-
-      iex> update_todo(todo, %{field: new_value})
-      {:ok, %Todo{}}
-
-      iex> update_todo(todo, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  # def update_todo(%Todo{} = todo, attrs) do
-  #   IO.inspect(todo, label: "todo In updatetodo")
-  #   IO.inspect(attrs, label: "attrs in updatetodo")
-  #   todo
-  #   |> Todo.changeset(attrs)
-  #   |> Repo.update()
-  # end
 
   # @doc """
   # Deletes a todo.

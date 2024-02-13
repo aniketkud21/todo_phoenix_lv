@@ -1,13 +1,21 @@
 defmodule TodoLvWeb.TodoLive.Show do
+  alias TodoLv.Permissions
   alias TodoLv.Subtasks
+  alias TodoLv.Accounts
   alias TodoLv.Subtasks.Subtask
   use TodoLvWeb, :live_view
 
   alias TodoLv.Todos
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(params, session, socket) do
+    IO.inspect(params["id"])
+    user = Accounts.get_user_by_session_token(session["user_token"])
+    %{view: view, edit: edit} = check_permission(user.id, params["id"])
+    {:ok,
+    socket
+    |> assign(:view, view)
+    |> assign(:edit, edit)}
   end
 
   @impl true
@@ -15,7 +23,17 @@ defmodule TodoLvWeb.TodoLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  defp check_permission(user_id, todo_id) do
+    permission = Permissions.get_permission_by_user_id!(user_id, todo_id)
+    cond do
+      permission.role_id==2 -> %{view: true, edit: false}
+      permission.role_id==3 || permission.role_id==1 -> %{view: true, edit: true}
+      true -> %{view: false, edit: false}
+    end
+  end
+
   defp apply_action(socket, :show, params) do
+    IO.inspect(params)
     %{"id" => id} = params
     subtasks = Todos.get_todo!(id).subtasks
 
@@ -47,7 +65,7 @@ defmodule TodoLvWeb.TodoLive.Show do
     list = helper(subtasks)
 
     Todos.update_todo(todo, %{status: Enum.at(list, 0)})
-    
+
     {:noreply,
     socket
     |> stream_insert(:subtasks, subtask)}
