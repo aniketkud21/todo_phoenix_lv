@@ -13,6 +13,22 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         <:subtitle>Use this form to share todos.</:subtitle>
       </.header>
 
+      <.table
+        id="users"
+        rows={@streams.permissions}
+      >
+        <:col :let={{_id, permission}} label="Name"><%= permission.user.email %></:col>
+        <:col :let={{_id, permission}} label="Role"><%= permission.role.role_name %></:col>
+        <:action :let={{id, permission}}>
+          <.link
+            phx-click={JS.push("deletepermission", value: %{id: permission.id})}
+            data-confirm="Are you sure?"
+          >
+            Delete
+          </.link>
+        </:action>
+      </.table>
+
       <.simple_form
         for={@shareform}
         id="share-form"
@@ -30,10 +46,13 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
 
   @impl true
   def update(assigns, socket) do
+    all_permissions = Permissions.get_permission_by_todo_id!(assigns.todo.id)
+    IO.inspect(all_permissions)
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(shareform: to_form(%{role: "", email: ""}))}
+     |> assign(shareform: to_form(%{role: "", email: ""}))
+     |> stream(:permissions, all_permissions)}
   end
 
   @impl true
@@ -43,13 +62,21 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
   end
 
   @impl true
+  def handle_event("deletepermission", %{"id" => id}, socket) do
+    IO.inspect(id)
+    permission = Permissions.get_permission!(id)
+    {:ok, _} = Permissions.delete_permission(permission)
+
+    {:noreply, stream(socket, :permissions, permission, reset: true)}
+  end
+
+  @impl true
   def handle_event("share", %{"email" => email, "role" => role}, socket) do
     #IO.inspect(params, label: "Save params")
     user_id = Accounts.get_user_by_email(email)
     role_id = Roles.get_role_by_name!(role)
 
     IO.inspect(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email), "role_id" => Roles.get_role_by_name!(role)}, label: "to save struct")
-
 
     if(user_id == nil || role_id == nil) do
       {:noreply,

@@ -22,8 +22,24 @@ defmodule TodoLv.Permissions do
       ** (Ecto.NoResultsError)
 
   """
+  def get_permission!(id) do
+    Repo.get!(Permission, id) |> Repo.preload(:role) |> Repo.preload(:user)
+  end
+
   def get_permission_by_user_id!(user_id, todo_id) do
     Repo.get_by!(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
+  end
+
+  def get_permission_by_todo_id!(todo_id) do
+    permissions = from p in Permission,
+      where: p.todo_id == ^todo_id,
+      select: p
+
+    Repo.all(permissions) |> Repo.preload(:role) |> Repo.preload(:user)
+  end
+
+  def delete_permission(%Permission{} = permission) do
+    Repo.delete(permission)
   end
 
   #def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)

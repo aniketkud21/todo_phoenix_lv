@@ -1,4 +1,5 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  alias TodoLv.Permissions
   alias TodoLv.Roles
   alias TodoLv.Categories
   alias TodoLv.Accounts
@@ -101,7 +102,7 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     {:noreply, stream_delete(socket, :todos, todo)}
   end
-
+  
   @impl true
   def handle_event("next", _unsigned_params, socket) do
     current_page_number = socket.assigns.page_number + 1
