@@ -126,7 +126,7 @@
   <.live_component
     module={TodoLvWeb.TodoLive.FormComponent}
     id={@todo.id || :new}
-    current_user={@user}
+    current_user={@current_user}
     categories={@category}
     options={@options}
     title={@page_title}
@@ -140,7 +140,7 @@
   <.live_component
     module={TodoLvWeb.TodoLive.ShareFormComponent}
     id={@todo.id || :new}
-    current_user={@user}
+    current_user={@current_user}
     roles={@roles}
     title={@page_title}
     action={@live_action}

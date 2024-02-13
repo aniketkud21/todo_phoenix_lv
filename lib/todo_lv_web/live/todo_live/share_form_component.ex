@@ -85,11 +85,12 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         |> push_navigate(to: socket.assigns.navigate)}
     else
       case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
-        {:ok, _permission} ->
+        {:ok, permission} ->
           {:noreply,
           socket
-          |> put_flash(:info, "Todo shared successfully")
-          |> push_navigate(to: socket.assigns.navigate)}
+          |> put_flash(:info, "Todo shared successfully")}
+          # |> stream_insert(:permissions, permission)}
+          # |> push_navigate(to: socket.assigns.navigate)}
 
         {:error, %Ecto.Changeset{} = changeset} ->
           IO.inspect(changeset)

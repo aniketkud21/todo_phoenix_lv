@@ -1,7 +1,5 @@
 <.header>
   Listing Subtasks of <%= @todo.title %>
-
-  
     <:actions>
       <%= if( @edit == true) do%>
         <.link patch={~p"/todos/#{@todo}/new"}>
@@ -37,7 +35,7 @@
         <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
       <% end %>
     </:action>
-    <:action :let={{id, subtask}}>
+    <:action :let={{_id, subtask}}>
       <%= if( @edit == true) do%>
         <.link
           phx-click={JS.push("delete", value: %{id: subtask.id})}

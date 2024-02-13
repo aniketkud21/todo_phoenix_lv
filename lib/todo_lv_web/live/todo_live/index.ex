@@ -1,24 +1,25 @@
 defmodule TodoLvWeb.TodoLive.Index do
-  alias TodoLv.Permissions
   alias TodoLv.Roles
   alias TodoLv.Categories
-  alias TodoLv.Accounts
+  # alias TodoLv.Accounts
   use TodoLvWeb, :live_view
 
   alias TodoLv.Todos
   alias TodoLv.Todos.Todo
 
+  on_mount {TodoLvWeb.UserAuth, :mount_current_user}
+
   @impl true
-  def mount(_params, session, socket) do
+  def mount(_params, _session, socket) do
     IO.inspect(socket, label: "on mount")
-    user = Accounts.get_user_by_session_token(session["user_token"])
+    # user = Accounts.get_user_by_session_token(session["user_token"])
 
     categories = Categories.list_categories_temp()
 
     {:ok,
    socket
    |> assign(searchForm: to_form(%{default_value: ""}))
-   |> assign(:user, user)
+   # |> assign(:user, user)
    |> assign(:page_number, 1)
    |> assign(:toggle_bookmark, false)
    |> assign(:category, categories)
@@ -54,7 +55,6 @@ defmodule TodoLvWeb.TodoLive.Index do
       role.role_name
     end)
 
-    IO.inspect(roles, label: "aLL ROLES")
     socket
     |> assign(:page_title, "Share Todo")
     |> assign(:todo, Todos.get_todo!(id))
@@ -71,9 +71,9 @@ defmodule TodoLvWeb.TodoLive.Index do
   defp apply_action(socket, :index, _params) do
     paginated_todos = handle_pagination(socket, socket.assigns.page_number)
 
-    max_page_no = div(length(socket.assigns.user.todos),4)
+    max_page_no = div(length(socket.assigns.current_user.todos),4)
 
-    if(rem(length(socket.assigns.user.todos),4) == 0) do
+    if(rem(length(socket.assigns.current_user.todos),4) == 0) do
 
       socket
       |> assign(:page_title, "Listing Todos")
@@ -95,6 +95,8 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> stream_insert(:todos, todo)}
   end
 
+  #----------------- Buttons --------------
+
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     todo = Todos.get_todo!(id)
@@ -102,7 +104,39 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     {:noreply, stream_delete(socket, :todos, todo)}
   end
-  
+
+  @impl true
+  def handle_event("heartpress", %{"id" => id}, socket) do
+    todo = Todos.get_todo!(id)
+    {:ok, updated_todo} = Todos.update_todo(todo , %{like: !todo.like})
+    {:noreply, stream_insert(socket, :todos, updated_todo)}
+  end
+
+  @impl true
+  def handle_event("bookmarkpress", _unsigned_paramz, socket) do
+    if(socket.assigns.toggle_bookmark == false) do
+      bookmarked_todos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
+        todo.like == true
+      end)
+
+      IO.inspect(bookmarked_todos, label: "btodos")
+
+      {:noreply,
+      socket
+      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
+      |> stream(:todos, bookmarked_todos, reset: true)}
+    else
+      paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+
+      {:noreply,
+      socket
+      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
+      |> stream(:todos, paginated_todos, reset: true)}
+    end
+  end
+
+  # --------- Pagination -------------------
+
   @impl true
   def handle_event("next", _unsigned_params, socket) do
     current_page_number = socket.assigns.page_number + 1
@@ -125,35 +159,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> stream(:todos, paginated_todos, reset: true)}
   end
 
-  @impl true
-  def handle_event("heartpress", %{"id" => id}, socket) do
-    todo = Todos.get_todo!(id)
-    {:ok, updated_todo} = Todos.update_todo(todo , %{like: !todo.like})
-    {:noreply, stream_insert(socket, :todos, updated_todo)}
-  end
-
-  @impl true
-  def handle_event("bookmarkpress", _unsigned_paramz, socket) do
-    if(socket.assigns.toggle_bookmark == false) do
-      bookmarked_todos = Enum.filter(socket.assigns.user.todos, fn todo ->
-        todo.like == true
-      end)
-
-      IO.inspect(bookmarked_todos, label: "btodos")
-
-      {:noreply,
-      socket
-      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
-      |> stream(:todos, bookmarked_todos, reset: true)}
-    else
-      paginated_todos = handle_pagination(socket, socket.assigns.page_number)
-
-      {:noreply,
-      socket
-      |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
-      |> stream(:todos, paginated_todos, reset: true)}
-    end
-  end
+  #---------------- Search ---------------------------
 
   @impl true
   def handle_event("searchTodo", %{"_target" => ["default_value"], "default_value" => ""}, socket) do
@@ -166,10 +172,12 @@ defmodule TodoLvWeb.TodoLive.Index do
     todos = Todos.search(search_query)
     IO.inspect(todos, label: "Search todos")
     filtered_todos = Enum.filter(todos, fn todo ->
-      todo.user_id == socket.assigns.user.id
+      todo.user_id == socket.assigns.current_user.id
     end)
     {:noreply, stream(socket, :todos, filtered_todos, reset: true)}
   end
+
+  # ------------- Filtering --------------------------------
 
   @impl true
   def handle_event("filterTodos", %{"_target" => ["status"], "status" => status}, socket) do
@@ -183,7 +191,7 @@ defmodule TodoLvWeb.TodoLive.Index do
       socket
       |> stream(:todos, paginated_todos, reset: true)}
     else
-      filteredTodos = Enum.filter(socket.assigns.user.todos, fn todo ->
+      filteredTodos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
         todo.status == status
       end)
       {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
@@ -193,14 +201,16 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("filterTodosByCategory", %{"_target" => ["category"], "category" => category}, socket) do
-    filteredTodos = Enum.filter(socket.assigns.user.todos, fn todo ->
+    filteredTodos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
       todo.category.name == category
     end)
     {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
   end
 
+  #------------- Private Helper functions ---------------
+
   defp handle_pagination(socket, current_page_number) do
-    socket.assigns.user.todos
+    socket.assigns.current_user.todos
     |> Enum.sort_by(&(&1.updated_at), Date)
     |> Enum.reverse()
     |> Enum.slice((current_page_number-1) * 4 , 4)
@@ -211,7 +221,6 @@ defmodule TodoLvWeb.TodoLive.Index do
       subtask.status
     end)
 
-    IO.inspect(status_list, label: "oNLY STATUS")
     cond do
       length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"]
       "In-Progress" in status_list -> ["In-Progress"]

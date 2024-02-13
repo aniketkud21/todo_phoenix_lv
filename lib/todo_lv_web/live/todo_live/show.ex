@@ -1,17 +1,18 @@
 defmodule TodoLvWeb.TodoLive.Show do
   alias TodoLv.Permissions
   alias TodoLv.Subtasks
-  alias TodoLv.Accounts
   alias TodoLv.Subtasks.Subtask
   use TodoLvWeb, :live_view
 
   alias TodoLv.Todos
 
+  on_mount {TodoLvWeb.UserAuth, :mount_current_user}
+
   @impl true
-  def mount(params, session, socket) do
+  def mount(params, _session, socket) do
     IO.inspect(params["id"])
-    user = Accounts.get_user_by_session_token(session["user_token"])
-    %{view: view, edit: edit} = check_permission(user.id, params["id"])
+    # user = Accounts.get_user_by_session_token(session["user_token"])
+    %{view: view, edit: edit} = check_permission(socket.assigns.current_user.id, params["id"])
     {:ok,
     socket
     |> assign(:view, view)
