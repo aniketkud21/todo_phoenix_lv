@@ -217,6 +217,32 @@ defmodule TodoLvWeb.UserAuth do
 
   end
 
+  def on_mount(:check_edit_permission, socket) do
+    IO.inspect("something")
+    {:cont, socket}
+    #socket = mount_current_user(socket, session)
+
+      # permission = Permissions.get_permission_by_user_id(socket.assigns.current_user.id, params["id"])
+      # cond do
+      #   permission.role_id==2
+      #     -> {:cont, socket
+      #         |> Phoenix.Component.assign(:view, true)
+      #         |> Phoenix.Component.assign(:edit, false)}
+      #        # |> assign(:view, true)
+      #        #|> assign(:edit, false)}
+      #   permission.role_id==3 || permission.role_id==1
+      #     -> {:cont, socket
+      #         |> Phoenix.Component.assign(:view, true)
+      #         |> Phoenix.Component.assign(:edit, true)}
+            #  |> assign(:view, true)
+            #  |> assign(:edit, true)}
+        # permission == nil ->
+        #   {:halt, socket
+        #   |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+        #   |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
+      # end
+  end
+
   defp mount_current_user(socket, session) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do

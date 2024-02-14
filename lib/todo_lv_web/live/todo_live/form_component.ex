@@ -5,6 +5,8 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   alias TodoLv.Todos
 
+  on_mount {TodoLvWeb.UserAuth, :check_edit_permission}
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -18,11 +20,10 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         for={@form}
         id="todo-form"
         phx-target={@myself}
-        phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:title]} type="text" label="Title" phx-debounce="500"/>
-        <.input field={@form[:desc]} type="text" label="Desc" phx-debounce="500"/>
+        <.input field={@form[:title]} type="text" id="title-input" label="Title" phx-debounce="500"/>
+        <.input field={@form[:desc]} type="text" id="desc-input" label="Desc" phx-debounce="500"/>
         <.input field={@form[:status]} type="select" options={@options} label="Status"/>
         <.input field={@form[:category_id]} type="select" options={@categories} label="Category"/>
         <.input field={@form[:like]} type="checkbox" label="Like"/>
@@ -36,38 +37,94 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   @impl true
+  def mount(socket) do
+    IO.inspect(socket, label: "Inside component")
+    {:ok, socket}
+  end
+
+  @impl true
   def update(%{todo: todo} = assigns, socket) do
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
     # IO.inspect(todo)
-    # IO.inspect(assigns, label: "Assigns in new todo")
-    changeset = Todos.change_todo(todo)
+    #IO.inspect(assigns, label: "Assigns in new todo")
 
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign_form(changeset)}
+    cond do
+      todo.id == nil ->
+        changeset = Todos.change_todo(todo)
+        {:ok,
+        socket
+        |> assign(assigns)
+        |> assign_form(changeset)}
+      check_permission(assigns.current_user.id, todo.id) == true ->
+        changeset = Todos.change_todo(todo)
+
+        {:ok,
+        socket
+        |> assign(assigns)
+        |> assign(:creator_id, todo.user_id)
+        |> assign_form(changeset)}
+      check_permission(assigns.current_user.id, todo.id) == false ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Unauthorized")
+         |> push_navigate(to: ~p"/unauthorized")}
+    end
+
+
+
+
+    # if(check_permission(assigns.current_user.id, todo.id)) do
+    #   changeset = Todos.change_todo(todo)
+
+    #   {:ok,
+    #   socket
+    #   |> assign(assigns)
+    #   |> assign(:creator_id, todo.user_id)
+    #   |> assign_form(changeset)}
+    # else
+    #   {:ok,
+    #      socket
+    #      |> put_flash(:error, "Unauthorized")
+    #      |> push_navigate(to: ~p"/unauthorized")}
+    # end
   end
 
-  @impl true
-  def handle_event("validate", %{"todo" => todo_params}, socket) do
-    todo_params = todo_params
-    |> Map.put_new("user_id" , socket.assigns.current_user.id)
-
-    changeset =
-      socket.assigns.todo
-      |> Todos.change_todo(todo_params)
-      |> Map.put(:action, :validate)
-
-    {:noreply, assign_form(socket, changeset)}
+  defp check_permission(user_id, todo_id) do
+    permission = Permissions.get_permission_by_user_id(user_id, todo_id)
+    cond do
+      permission.role_id==3 || permission.role_id==1 -> true
+      true -> false
+    end
   end
+
+  # @impl true
+  # def handle_event("validate", %{"todo" => todo_params}, socket) do
+  #   todo_params = todo_params
+  #   |> Map.put_new("user_id" , socket.assigns.current_user.id)
+
+  #   changeset =
+  #     socket.assigns.todo
+  #     |> Todos.change_todo(todo_params)
+  #     |> Map.put(:action, :validate)
+
+  #   {:noreply, assign_form(socket, changeset)}
+  # end
 
   def handle_event("save", %{"todo" => todo_params}, socket) do
-    todo_params = todo_params
+    todo_new_params = todo_params
     |> Map.put_new("user_id" , socket.assigns.current_user.id)
+
+    todo_edit_params = todo_params
+    |> Map.put_new("user_id" , socket.assigns.creator_id)
 
     IO.inspect(todo_params, label: "Socket on save")
     IO.inspect(socket.assigns.action)
+    if(socket.assigns.action == :edit) do
+      save_todo(socket, socket.assigns.action, todo_edit_params)
+    else
+      save_todo(socket, socket.assigns.action, todo_new_params)
+    end
     save_todo(socket, socket.assigns.action, todo_params)
   end
 
