@@ -4,6 +4,7 @@ defmodule TodoLvWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias TodoLv.Permissions
   alias TodoLv.Accounts
 
   # Make the remember me cookie valid for 60 days.
@@ -170,6 +171,50 @@ defmodule TodoLvWeb.UserAuth do
     else
       {:cont, socket}
     end
+  end
+
+  # ----- Personal Auth functions -----------------
+
+  def on_mount(:check_permission_level, params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+      permission = Permissions.get_permission_by_user_id(socket.assigns.current_user.id, params["id"])
+      cond do
+        permission.role_id==2
+          -> {:cont, socket
+              |> Phoenix.Component.assign(:view, true)
+              |> Phoenix.Component.assign(:edit, false)}
+             # |> assign(:view, true)
+             #|> assign(:edit, false)}
+        permission.role_id==3 || permission.role_id==1
+          -> {:cont, socket
+              |> Phoenix.Component.assign(:view, true)
+              |> Phoenix.Component.assign(:edit, true)}
+            #  |> assign(:view, true)
+            #  |> assign(:edit, true)}
+        # permission == nil ->
+        #   {:halt, socket
+        #   |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+        #   |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
+      end
+
+
+    # case Permissions.get_permission_by_user_id!(socket.assigns.current_user.id, params["id"]) do
+    #   permission.role_id==2
+    #     -> {:cont, socket
+    #        |> assign(:view, true)
+    #        |> assign(:edit, false)}
+    #   permission.role_id==3 || permission.role_id==1
+    #     -> {:cont, socket
+    #        |> assign(:view, true)
+    #        |> assign(:edit, true)}
+    #   nil
+    #     -> {:halt, socket
+    #         |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+    #         |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
+    # end
+    #IO.inspect(permission)
+
   end
 
   defp mount_current_user(socket, session) do

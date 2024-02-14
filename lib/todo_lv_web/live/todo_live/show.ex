@@ -6,17 +6,17 @@ defmodule TodoLvWeb.TodoLive.Show do
 
   alias TodoLv.Todos
 
-  on_mount {TodoLvWeb.UserAuth, :mount_current_user}
+  on_mount {TodoLvWeb.UserAuth, :check_permission_level}
 
   @impl true
   def mount(params, _session, socket) do
     IO.inspect(params["id"])
     # user = Accounts.get_user_by_session_token(session["user_token"])
-    %{view: view, edit: edit} = check_permission(socket.assigns.current_user.id, params["id"])
+    # %{view: view, edit: edit} = check_permission(socket.assigns.current_user.id, params["id"])
     {:ok,
-    socket
-    |> assign(:view, view)
-    |> assign(:edit, edit)}
+    socket}
+    # |> assign(:view, view)
+    # |> assign(:edit, edit)}
   end
 
   @impl true

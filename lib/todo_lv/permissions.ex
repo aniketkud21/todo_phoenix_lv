@@ -26,7 +26,7 @@ defmodule TodoLv.Permissions do
     Repo.get!(Permission, id) |> Repo.preload(:role) |> Repo.preload(:user)
   end
 
-  def get_permission_by_user_id!(user_id, todo_id) do
+  def get_permission_by_user_id(user_id, todo_id) do
     Repo.get_by!(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
   end
 

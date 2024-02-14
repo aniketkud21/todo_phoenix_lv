@@ -19,7 +19,7 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
       >
         <:col :let={{_id, permission}} label="Name"><%= permission.user.email %></:col>
         <:col :let={{_id, permission}} label="Role"><%= permission.role.role_name %></:col>
-        <:action :let={{id, permission}}>
+        <:action :let={{_id, permission}}>
           <.link
             phx-click={JS.push("deletepermission", value: %{id: permission.id})}
             data-confirm="Are you sure?"
@@ -85,7 +85,7 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         |> push_navigate(to: socket.assigns.navigate)}
     else
       case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
-        {:ok, permission} ->
+        {:ok, _permission} ->
           {:noreply,
           socket
           |> put_flash(:info, "Todo shared successfully")}
