@@ -13,6 +13,16 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         <:subtitle>Use this form to share todos.</:subtitle>
       </.header>
 
+      <main class="container">
+        <p class="alert alert-info" role="alert"
+            phx-click="lv:clear-flash"
+            phx-value-key="info"><%= live_flash(@flash, :info) %></p>
+
+        <p class="alert alert-danger" role="alert"
+            phx-click="lv:clear-flash"
+            phx-value-key="error"><%= live_flash(@flash, :error) %></p>
+      </main>
+
       <.table
         id="users"
         rows={@streams.permissions}
@@ -84,16 +94,19 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     if(user_id == nil || role_id == nil) do
       {:noreply,
         socket
-        |> put_flash(:error, "Todo not shared successfully")
-        |> push_navigate(to: socket.assigns.navigate)}
+        #|> assign(:flash, %{"error" => "Todo not shared successfully"})}
+        |> put_flash(:error, "Todo not shared successfully")}
+        #|> push_navigate(to: socket.assigns.navigate)}
     else
       case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
-        {:ok, permission} ->
+        {:ok, _permission} ->
+          all_permissions = Permissions.get_permission_by_todo_id!(socket.assigns.todo.id)
           {:noreply,
           socket
           |> put_flash(:info, "Todo shared successfully")
-          #|> stream_insert(:permissions, permission)}
-          |> push_navigate(to: socket.assigns.navigate)}
+          |> stream(:permissions, all_permissions, reset: true)}
+          # stream_insert not working
+          #|> push_navigate(to: socket.assigns.navigate)}
 
         {:error, %Ecto.Changeset{} = changeset} ->
           IO.inspect(changeset)
@@ -104,58 +117,3 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     end
   end
 end
-
-# defmodule TodoLvWeb.TodoLive.FormComponent do
-#   use TodoLvWeb, :live_component
-
-#   alias TodoLv.Todos
-
-
-#   def handle_event("save", %{"todo" => todo_params}, socket) do
-#     todo_params = todo_params
-#     |> Map.put_new("user_id" , socket.assigns.current_user.id)
-
-#     IO.inspect(todo_params, label: "Socket on save")
-#     IO.inspect(socket.assigns.action)
-#     save_todo(socket, socket.assigns.action, todo_params)
-#   end
-
-#   defp save_todo(socket, :edit, todo_params) do
-#     IO.inspect("ssp")
-#     case Todos.update_todo(socket.assigns.todo, todo_params) do
-#       {:ok, todo} ->
-#         notify_parent({:saved, todo})
-
-#         {:noreply,
-#          socket
-#          |> put_flash(:info, "Todo updated successfully")
-#          |> push_navigate(to: socket.assigns.navigate)}
-
-#       {:error, %Ecto.Changeset{} = changeset} ->
-#         {:noreply, assign_form(socket, changeset)}
-#     end
-#   end
-
-#   defp save_todo(socket, :new, todo_params) do
-#     case Todos.create_todo(todo_params) do
-#       {:ok, todo} ->
-#         notify_parent({:saved, todo})
-#         IO.inspect(socket)
-#         {:noreply,
-#          socket
-#          |> put_flash(:info, "Todo created successfully")
-#          |> push_navigate(to: socket.assigns.navigate)}
-
-#       {:error, %Ecto.Changeset{} = changeset} ->
-#         {:noreply, assign_form(socket, changeset)}
-#     end
-#   end
-
-#   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-#     socket
-#     |> assign(:form, to_form(changeset))
-#     |> assign(:subtaskform, to_form(changeset))
-#   end
-
-#   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
-# end
