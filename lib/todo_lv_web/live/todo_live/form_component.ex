@@ -70,24 +70,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
          |> put_flash(:error, "Unauthorized")
          |> push_navigate(to: ~p"/unauthorized")}
     end
-
-
-
-
-    # if(check_permission(assigns.current_user.id, todo.id)) do
-    #   changeset = Todos.change_todo(todo)
-
-    #   {:ok,
-    #   socket
-    #   |> assign(assigns)
-    #   |> assign(:creator_id, todo.user_id)
-    #   |> assign_form(changeset)}
-    # else
-    #   {:ok,
-    #      socket
-    #      |> put_flash(:error, "Unauthorized")
-    #      |> push_navigate(to: ~p"/unauthorized")}
-    # end
   end
 
   defp check_permission(user_id, todo_id) do
@@ -110,22 +92,19 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   #   {:noreply, assign_form(socket, changeset)}
   # end
-
+  @impl true
   def handle_event("save", %{"todo" => todo_params}, socket) do
-    todo_new_params = todo_params
-    |> Map.put_new("user_id" , socket.assigns.current_user.id)
-
-    todo_edit_params = todo_params
-    |> Map.put_new("user_id" , socket.assigns.creator_id)
-
     IO.inspect(todo_params, label: "Socket on save")
     IO.inspect(socket.assigns.action)
     if(socket.assigns.action == :edit) do
+      todo_edit_params = todo_params
+      |> Map.put_new("user_id" , socket.assigns.creator_id)
       save_todo(socket, socket.assigns.action, todo_edit_params)
     else
+      todo_new_params = todo_params
+      |> Map.put_new("user_id" , socket.assigns.current_user.id)
       save_todo(socket, socket.assigns.action, todo_new_params)
     end
-    save_todo(socket, socket.assigns.action, todo_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do
