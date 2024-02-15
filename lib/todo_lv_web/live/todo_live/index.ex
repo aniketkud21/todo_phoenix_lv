@@ -38,16 +38,16 @@ defmodule TodoLvWeb.TodoLive.Index do
     options = helper(subtasks)
     IO.inspect(options, label: "Options")
 
-    # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+    paginated_todos = handle_pagination(socket, socket.assigns.page_number)
 
-    # max_page_no = div(length(socket.assigns.current_user.todos),4)
+    max_page_no = div(length(socket.assigns.current_user.todos),4)
 
     socket
     |> assign(:page_title, "Edit Todo")
     |> assign(:todo, Todos.get_todo!(id))
     |> assign(:options, options)
-    # |> assign(:max_page_number, max_page_no)
-    # |> stream(:todos, paginated_todos)
+    |> assign(:max_page_number, max_page_no)
+    |> stream(:todos, paginated_todos)
   end
 
   defp apply_action(socket, :share, %{"id" => id}) do

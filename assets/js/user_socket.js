@@ -84,34 +84,34 @@ if (todoId) {
 
 room_id = "room:" + todoId
 console.log(room_id)
-let channel = socket.channel(room_id, {})
-let titleInput = document.querySelector("#title-input")
-let descInput = document.querySelector("#desc-input")
+let channel = socket.channel("room:lobby", {})
+// let titleInput = document.querySelector("#title-input")
+// let descInput = document.querySelector("#desc-input")
 // let messagesContainer = document.querySelector("#messages")
 
-titleInput.addEventListener("input", event => {
-  console.log(titleInput.value)
-  channel.push("new_msg", {body: titleInput.value})
-})
+// titleInput.addEventListener("input", event => {
+//   console.log(titleInput.value)
+//   channel.push("new_msg", {body: titleInput.value})
+// })
 
-descInput.addEventListener("input", event => {
-  console.log(descInput.value)
-  channel.push("new_msg2", {body: descInput.value})
-})
+// descInput.addEventListener("input", event => {
+//   console.log(descInput.value)
+//   channel.push("new_msg2", {body: descInput.value})
+// })
 
-channel.on("new_msg", payload => {
-  //let messageItem = document.createElement("p")
-  //messageItem.innerText = `[${Date()}] ${payload.body}`
-  // messagesContainer.appendChild(messageItem)
-  titleInput.value = `${payload.body}`
-})
+// channel.on("new_msg", payload => {
+//   //let messageItem = document.createElement("p")
+//   //messageItem.innerText = `[${Date()}] ${payload.body}`
+//   // messagesContainer.appendChild(messageItem)
+//   titleInput.value = `${payload.body}`
+// })
 
-channel.on("new_msg2", payload => {
-  //let messageItem = document.createElement("p")
-  //messageItem.innerText = `[${Date()}] ${payload.body}`
-  // messagesContainer.appendChild(messageItem)
-  descInput.value = `${payload.body}`
-})
+// channel.on("new_msg2", payload => {
+//   //let messageItem = document.createElement("p")
+//   //messageItem.innerText = `[${Date()}] ${payload.body}`
+//   // messagesContainer.appendChild(messageItem)
+//   descInput.value = `${payload.body}`
+// })
 
 channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })

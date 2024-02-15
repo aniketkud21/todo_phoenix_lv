@@ -21,8 +21,46 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+let socket = new Socket("/socket", {params: {token: window.userToken}})
+
+socket.connect()
+
+let channel = socket.channel("room:lobby", {})
+
+channel.join()
+  .receive("ok", resp => { console.log("Joined successfully", resp) })
+  .receive("error", resp => { console.log("Unable to join", resp) })
+
+
+let Hooks = {}
+Hooks.TitleInput = {
+  mounted() {
+    this.el.addEventListener("input", e => {
+      console.log(this.el.value)
+      channel.push("new_msg", {body: this.el.value})
+    })
+
+    channel.on("new_msg", payload => {
+        this.el.value = `${payload.body}`
+    })
+  }
+}
+
+Hooks.DescInput = {
+    mounted() {
+      this.el.addEventListener("input", e => {
+        console.log(this.el.value)
+        channel.push("new_msg2", {body: this.el.value})
+      })
+
+      channel.on("new_msg2", payload => {
+        this.el.value = `${payload.body}`
+      })
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})

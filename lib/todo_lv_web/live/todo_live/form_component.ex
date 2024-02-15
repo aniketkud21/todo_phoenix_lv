@@ -22,8 +22,8 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         phx-target={@myself}
         phx-submit="save"
       >
-        <.input field={@form[:title]} type="text" id="title-input" label="Title" phx-debounce="500"/>
-        <.input field={@form[:desc]} type="text" id="desc-input" label="Desc" phx-debounce="500"/>
+        <.input field={@form[:title]} type="text" id="title-input" label="Title" phx-hook="TitleInput" phx-debounce="500"/>
+        <.input field={@form[:desc]} type="text" id="desc-input" label="Desc" phx-hook="DescInput" phx-debounce="500"/>
         <.input field={@form[:status]} type="select" options={@options} label="Status"/>
         <.input field={@form[:category_id]} type="select" options={@categories} label="Category"/>
         <.input field={@form[:like]} type="checkbox" label="Like"/>
