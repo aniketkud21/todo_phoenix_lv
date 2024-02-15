@@ -11,7 +11,7 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    IO.inspect(socket, label: "on mount")
+    
     # user = Accounts.get_user_by_session_token(session["user_token"])
 
     categories = Categories.list_categories_temp()
@@ -61,10 +61,16 @@ defmodule TodoLvWeb.TodoLive.Index do
       role.role_name
     end)
 
+    # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+
+    # max_page_no = div(length(socket.assigns.current_user.todos),4)
+
     socket
     |> assign(:page_title, "Share Todo")
     |> assign(:todo, Todos.get_todo!(id))
     |> assign(:roles, roles)
+    #|> assign(:max_page_number, max_page_no)
+    #|> stream(:todos, paginated_todos)
     # |> assign(shareform: to_form(%{status: "Viewer"}))
   end
 

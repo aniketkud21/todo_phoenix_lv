@@ -20,12 +20,15 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         <:col :let={{_id, permission}} label="Name"><%= permission.user.email %></:col>
         <:col :let={{_id, permission}} label="Role"><%= permission.role.role_name %></:col>
         <:action :let={{_id, permission}}>
-          <.link
-            phx-click={JS.push("deletepermission", value: %{id: permission.id})}
-            data-confirm="Are you sure?"
-          >
-            Delete
-          </.link>
+          <%= if(permission.role.role_name != "Creator") do %>
+            <.link
+              phx-target={@myself}
+              phx-click={JS.push("delete_permission", value: %{id: permission.id})}
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.link>
+          <% end %>
         </:action>
       </.table>
 
@@ -38,7 +41,7 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
       >
         <.input field={@shareform[:email]} type="text" label="User Email"/>
         <.input field={@shareform[:role]} type="select" options={@roles} label="Role"/>
-        <.button>Share Todo</.button>
+        <.button phx-target={@myself} >Share Todo</.button>
       </.simple_form>
     </div>
     """
@@ -62,12 +65,12 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
   end
 
   @impl true
-  def handle_event("deletepermission", %{"id" => id}, socket) do
+  def handle_event("delete_permission", %{"id" => id}, socket) do
     IO.inspect(id)
     permission = Permissions.get_permission!(id)
     {:ok, _} = Permissions.delete_permission(permission)
 
-    {:noreply, stream(socket, :permissions, permission, reset: true)}
+    {:noreply, stream_delete(socket, :permissions, permission)}
   end
 
   @impl true
@@ -85,12 +88,12 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         |> push_navigate(to: socket.assigns.navigate)}
     else
       case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
-        {:ok, _permission} ->
+        {:ok, permission} ->
           {:noreply,
           socket
-          |> put_flash(:info, "Todo shared successfully")}
-          # |> stream_insert(:permissions, permission)}
-          # |> push_navigate(to: socket.assigns.navigate)}
+          |> put_flash(:info, "Todo shared successfully")
+          #|> stream_insert(:permissions, permission)}
+          |> push_navigate(to: socket.assigns.navigate)}
 
         {:error, %Ecto.Changeset{} = changeset} ->
           IO.inspect(changeset)

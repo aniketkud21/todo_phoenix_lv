@@ -1,5 +1,4 @@
 defmodule TodoLvWeb.TodoLive.Show do
-  alias TodoLv.Permissions
   alias TodoLv.Subtasks
   alias TodoLv.Subtasks.Subtask
   use TodoLvWeb, :live_view
@@ -24,14 +23,14 @@ defmodule TodoLvWeb.TodoLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp check_permission(user_id, todo_id) do
-    permission = Permissions.get_permission_by_user_id!(user_id, todo_id)
-    cond do
-      permission.role_id==2 -> %{view: true, edit: false}
-      permission.role_id==3 || permission.role_id==1 -> %{view: true, edit: true}
-      true -> %{view: false, edit: false}
-    end
-  end
+  # defp check_permission(user_id, todo_id) do
+  #   permission = Permissions.get_permission_by_user_id!(user_id, todo_id)
+  #   cond do
+  #     permission.role_id==2 -> %{view: true, edit: false}
+  #     permission.role_id==3 || permission.role_id==1 -> %{view: true, edit: true}
+  #     true -> %{view: false, edit: false}
+  #   end
+  # end
 
   defp apply_action(socket, :show, params) do
     IO.inspect(params)
