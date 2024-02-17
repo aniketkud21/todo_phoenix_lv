@@ -10,6 +10,7 @@ defmodule TodoLv.Todos.Todo do
     belongs_to :user, TodoLv.Accounts.User
     belongs_to :category, TodoLv.Categories.Category
     has_many :subtasks, TodoLv.Subtasks.Subtask
+    has_many :permissions, TodoLv.Permissions.Permission
 
     timestamps(type: :utc_datetime)
   end

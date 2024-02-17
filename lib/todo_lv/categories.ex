@@ -9,24 +9,27 @@ defmodule TodoLv.Categories do
   alias TodoLv.Categories.Category
 
   @doc """
-  Returns the list of todos.
+  Returns the list of categories.
 
   ## Examples
 
-      iex> list_todos()
-      [%Todo{}, ...]
+      iex> list_categories()
+      [%Category{}, ...]
 
   """
   def list_categories do
     Repo.all(Category) |> Repo.preload(:todos)
   end
 
-  # def get_id_by_category(category) do
-  #   categories = list_categories()
-  #   Enum.find(categories, nil, fn x -> x.name == category end)
-  # end
+  @doc """
+  Returns the list of categories with mapping to id.
 
-  def list_categories_temp() do
+  ## Examples
+
+      iex> list_categories_mapping()
+      [{"Study", 1}, {"Household", 2}, {"Work", 3}]
+  """
+  def list_categories_mapping() do
     Repo.all(Category)
     |> Enum.map(&{&1.name, &1.id})
   end
@@ -110,20 +113,4 @@ defmodule TodoLv.Categories do
 #   def change_todo(%Todo{} = todo, attrs \\ %{}) do
 #     Todo.changeset(todo, attrs)
 #   end
-
-# # --------------------------------------
-#   def search(search_query) do
-#     search_query = "%#{search_query}%"
-#     IO.inspect(search_query)
-#     Todo
-#     |> order_by(asc: :title)
-#     |> where([t], ilike(t.title, ^search_query))
-#     #|> limit(5)
-#     |> Repo.all()
-#     |> Repo.preload(:user)
-
-#   end
 end
-
-
-# where([t], ilike(t.status, ^search_query))

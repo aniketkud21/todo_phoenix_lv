@@ -21,42 +21,87 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
-let socket = new Socket("/socket", {params: {token: window.userToken}})
+// let socket = new Socket("/socket", {params: {token: window.userToken}})
 
-socket.connect()
+// socket.connect()
 
-let channel = socket.channel("room:lobby", {})
+// let channel = socket.channel("room:lobby", {})
 
-channel.join()
-  .receive("ok", resp => { console.log("Joined successfully", resp) })
-  .receive("error", resp => { console.log("Unable to join", resp) })
+// console.log("Hitting on every route")
+
+// channel.join()
+//   .receive("ok", resp => { console.log("Joined successfully", resp) })
+//   .receive("error", resp => { console.log("Unable to join", resp) })
 
 
 let Hooks = {}
-Hooks.TitleInput = {
-  mounted() {
-    this.el.addEventListener("input", e => {
-      console.log(this.el.value)
-      channel.push("new_msg", {body: this.el.value})
+Hooks.ChannelJoin = {
+  mounted(){
+    let socket = new Socket("/socket", {params: {token: window.userToken}})
+
+    socket.connect()
+
+    let channel = socket.channel("room:lobby", {})
+
+    console.log("Hitting on every route")
+
+    channel.join()
+      .receive("ok", resp => { console.log("Joined successfully", resp) })
+      .receive("error", resp => { console.log("Unable to join", resp) })
+    
+    let titleInput = document.querySelector("#title-input")
+    let descInput = document.querySelector("#desc-input")
+    let statusInput = document.querySelector("#status-input")
+    let categoryInput = document.querySelector("#category-input")
+    let likeInput = document.querySelector("#like-input")
+      
+    titleInput.addEventListener("input", event => {
+      console.log(titleInput.value)
+      channel.push("new_msg", {body: titleInput.value})
+    })
+      
+    descInput.addEventListener("input", event => {
+      console.log(descInput.value)
+       channel.push("new_msg2", {body: descInput.value})
     })
 
+    statusInput.addEventListener("input", event => {
+      console.log(statusInput.value)
+       channel.push("new_msg3", {body: statusInput.value})
+    })
+
+    categoryInput.addEventListener("input", event => {
+      console.log(categoryInput.value)
+       channel.push("new_msg4", {body: categoryInput.value})
+    })
+
+    likeInput.addEventListener("input", event => {
+      console.log(likeInput.value)
+       channel.push("new_msg5", {body: likeInput.value})
+    })
+      
     channel.on("new_msg", payload => {
-        this.el.value = `${payload.body}`
+      titleInput.value = `${payload.body}`
     })
+      
+    channel.on("new_msg2", payload => {
+      descInput.value = `${payload.body}`
+    })
+
+    channel.on("new_msg3", payload => {
+      statusInput.value = `${payload.body}`
+    })
+
+    channel.on("new_msg4", payload => {
+      categoryInput.value = `${payload.body}`
+    })
+
+    channel.on("new_msg5", payload => {
+      console.log(payload)
+      //likeInput.checked = !likeInput.checked  // `${payload.body}`
+    })
+      
   }
-}
-
-Hooks.DescInput = {
-    mounted() {
-      this.el.addEventListener("input", e => {
-        console.log(this.el.value)
-        channel.push("new_msg2", {body: this.el.value})
-      })
-
-      channel.on("new_msg2", payload => {
-        this.el.value = `${payload.body}`
-      })
-    }
 }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")

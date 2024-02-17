@@ -89,6 +89,7 @@ defmodule TodoLv.Todos do
 
   """
   def delete_todo(%Todo{} = todo) do
+    Repo.delete_all(from(p in TodoLv.Permissions.Permission, where: p.todo_id == ^todo.id))
     Repo.delete(todo)
   end
 

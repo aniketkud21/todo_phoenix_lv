@@ -27,4 +27,22 @@ defmodule TodoLvWeb.RoomChannel do
     broadcast!(socket, "new_msg2", %{body: body})
     {:noreply, socket}
   end
+
+  def handle_in("new_msg3", %{"body" => body}, socket) do
+    IO.inspect(body)
+    broadcast!(socket, "new_msg3", %{body: body})
+    {:noreply, socket}
+  end
+
+  def handle_in("new_msg4", %{"body" => body}, socket) do
+    IO.inspect(body)
+    broadcast!(socket, "new_msg4", %{body: body})
+    {:noreply, socket}
+  end
+
+  def handle_in("new_msg5", %{"body" => body}, socket) do
+    IO.inspect(body)
+    broadcast!(socket, "new_msg5", %{body: body})
+    {:noreply, socket}
+  end
 end

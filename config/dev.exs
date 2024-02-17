@@ -22,7 +22,7 @@ config :todo_lv, TodoLvWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4000],
   check_origin: false,
   code_reloader: true,
-  debug_errors: false,
+  debug_errors: true,
   secret_key_base: "sGSpSptbgJi4AWpR2KnDXBQ5wjl+NaCgS0fk03q4zNBsO6Q+W8Wa/oLQCJYmkFk3",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
