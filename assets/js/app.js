@@ -33,74 +33,96 @@ import topbar from "../vendor/topbar"
 //   .receive("ok", resp => { console.log("Joined successfully", resp) })
 //   .receive("error", resp => { console.log("Unable to join", resp) })
 
-
 let Hooks = {}
 Hooks.ChannelJoin = {
   mounted(){
-    let socket = new Socket("/socket", {params: {token: window.userToken}})
+    // Get the current URL
+    var currentUrl = document.location.href;
+    console.log(currentUrl)
+    // Use the URL constructor to parse the URL
+    var urlObject = new URL(currentUrl);
 
-    socket.connect()
+    // Get the pathname from the URL object
+    var pathname = urlObject.pathname;
 
-    let channel = socket.channel("room:lobby", {})
+    // Split the pathname by '/' to get an array of path components
+    var pathComponents = pathname.split('/');
 
-    console.log("Hitting on every route")
+    // The todo id is the third component in this case
+    var todoId = pathComponents[2];
 
-    channel.join()
-      .receive("ok", resp => { console.log("Joined successfully", resp) })
-      .receive("error", resp => { console.log("Unable to join", resp) })
-    
-    let titleInput = document.querySelector("#title-input")
-    let descInput = document.querySelector("#desc-input")
-    let statusInput = document.querySelector("#status-input")
-    let categoryInput = document.querySelector("#category-input")
-    let likeInput = document.querySelector("#like-input")
+    // Log or use the extracted todo id as needed
+    console.log("Todo ID:", todoId);
+
+    // Check if todoId is not null or undefined before using it
+    if (todoId) {
+      console.log('Todo ID:', todoId);
+      let socket = new Socket("/socket", {params: {token: window.userToken}})
+
+      socket.connect()
+
+      let channel = socket.channel(`room:${todoId}`, {})
+
+      console.log("Hitting on every route")
+
+      channel.join()
+        .receive("ok", resp => { console.log("Joined successfully", resp) })
+        .receive("error", resp => { console.log("Unable to join", resp) })
       
-    titleInput.addEventListener("input", event => {
-      console.log(titleInput.value)
-      channel.push("new_msg", {body: titleInput.value})
-    })
-      
-    descInput.addEventListener("input", event => {
-      console.log(descInput.value)
-       channel.push("new_msg2", {body: descInput.value})
-    })
+      let titleInput = document.querySelector("#title-input")
+      let descInput = document.querySelector("#desc-input")
+      let statusInput = document.querySelector("#status-input")
+      let categoryInput = document.querySelector("#category-input")
+      let likeInput = document.querySelector("#like-input")
+        
+      titleInput.addEventListener("input", event => {
+        console.log(titleInput.value)
+        channel.push("new_msg", {body: titleInput.value})
+      })
+        
+      descInput.addEventListener("input", event => {
+        console.log(descInput.value)
+        channel.push("new_msg2", {body: descInput.value})
+      })
 
-    statusInput.addEventListener("input", event => {
-      console.log(statusInput.value)
-       channel.push("new_msg3", {body: statusInput.value})
-    })
+      statusInput.addEventListener("input", event => {
+        console.log(statusInput.value)
+        channel.push("new_msg3", {body: statusInput.value})
+      })
 
-    categoryInput.addEventListener("input", event => {
-      console.log(categoryInput.value)
-       channel.push("new_msg4", {body: categoryInput.value})
-    })
+      categoryInput.addEventListener("input", event => {
+        console.log(categoryInput.value)
+        channel.push("new_msg4", {body: categoryInput.value})
+      })
 
-    likeInput.addEventListener("input", event => {
-      console.log(likeInput.value)
-       channel.push("new_msg5", {body: likeInput.value})
-    })
-      
-    channel.on("new_msg", payload => {
-      titleInput.value = `${payload.body}`
-    })
-      
-    channel.on("new_msg2", payload => {
-      descInput.value = `${payload.body}`
-    })
+      likeInput.addEventListener("input", event => {
+        console.log(likeInput.value)
+        channel.push("new_msg5", {body: likeInput.value})
+      })
+        
+      channel.on("new_msg", payload => {
+        titleInput.value = `${payload.body}`
+      })
+        
+      channel.on("new_msg2", payload => {
+        descInput.value = `${payload.body}`
+      })
 
-    channel.on("new_msg3", payload => {
-      statusInput.value = `${payload.body}`
-    })
+      channel.on("new_msg3", payload => {
+        statusInput.value = `${payload.body}`
+      })
 
-    channel.on("new_msg4", payload => {
-      categoryInput.value = `${payload.body}`
-    })
+      channel.on("new_msg4", payload => {
+        categoryInput.value = `${payload.body}`
+      })
 
-    channel.on("new_msg5", payload => {
-      console.log(payload)
-      //likeInput.checked = !likeInput.checked  // `${payload.body}`
-    })
-      
+      channel.on("new_msg5", payload => {
+        console.log(payload)
+        //likeInput.checked = !likeInput.checked  // `${payload.body}`
+      })
+    } else {
+      console.error('Todo ID not found in the URL.');
+    }   
   }
 }
 

@@ -89,9 +89,10 @@
     
     <:action :let={{_id, todo}}>
       <div class="sr-only">
-        <.link navigate={~p"/todos/#{todo}"}>Show</.link>
+        <.link patch={~p"/todos/#{todo}"}>Show</.link>
       </div>
-      <.link patch={~p"/todos/#{todo}/edit"}>
+      <!-- href because i was not able to grab the url for joining the channel -->
+      <.link href={~p"/todos/#{todo}/edit"}>
         Edit
       </.link>
     </:action>

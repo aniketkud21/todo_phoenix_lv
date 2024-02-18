@@ -1,9 +1,12 @@
 <.header>
-  Listing Subtasks of <%= @todo.title %>
+  <%= @todo.title %>
     <:actions>
       <%= if( @edit == true) do%>
         <.link patch={~p"/todos/#{@todo}/new"}>
           <.button>New Subtask</.button>
+        </.link>
+        <.link patch={~p"/todos/#{@todo}/edit"}>
+          <.button>Edit Todo</.button>
         </.link>
       <% end %>
     </:actions>
@@ -19,6 +22,7 @@
   </.list>
 </div>
 
+<br>
 <br>
 
 <.header>Subtasks</.header>
