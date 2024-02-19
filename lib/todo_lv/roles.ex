@@ -13,7 +13,7 @@ defmodule TodoLv.Roles do
 
   ## Examples
 
-      iex> list_roless()
+      iex> list_roles()
       [%Role{}, ...]
 
   """
@@ -38,19 +38,18 @@ defmodule TodoLv.Roles do
   def get_role!(id), do: Repo.get!(Role, id)
 
   @doc """
-  Gets a role by role_name.
+  Gets a specific role by its name.
 
-  Raises `Ecto.NoResultsError` if the Role does not exist.
+  Raises `Ecto.NoResultsError` if the role does not exist.
 
   ## Examples
 
-      iex> get_role_by_name!(123)
-      %Role{}
+  iex> TodoLv.Roles.get_role_by_name!("Creator")
+  # Returns the %Role{} struct for the "Creator" role
 
-      iex> get_role_by_name!(456)
-      ** (Ecto.NoResultsError)
+  iex> TodoLv.Roles.get_role_by_name!("unknown_role")
+  # Raises `Ecto.NoResultsError` if no role named "unknown_role" exists
 
   """
-
   def get_role_by_name!(role_name), do: Repo.get_by!(Role, role_name: role_name)
 end

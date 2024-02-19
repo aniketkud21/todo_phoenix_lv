@@ -74,7 +74,7 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   end
 
   defp check_permission(user_id, todo_id) do
-    permission = Permissions.get_permission_by_user_id(user_id, todo_id)
+    permission = Permissions.get_user_todo_permission(user_id, todo_id)
     cond do
       permission.role_id==3 || permission.role_id==1 -> true
       true -> false

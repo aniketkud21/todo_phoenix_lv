@@ -226,10 +226,26 @@ defmodule TodoLv.Accounts do
     token
   end
 
-  @spec get_user_by_session_token(any()) ::
-          nil | [%{optional(atom()) => any()}] | %{optional(atom()) => any()}
   @doc """
-  Gets the user with the given signed token.
+  Retrieves the user associated with a given session token, if valid.
+
+  **Arguments:**
+
+  - `token` (String): The session token to verify.
+
+  **Return value:**
+
+  - `{:ok, user}`: A tuple containing `:ok` and the associated %User{} struct, preloaded with their todos including categories and subtasks.
+  - `{:error, reason}`: A tuple containing `:error` and the reason for failure, such as an invalid token or not finding a user.
+
+  **Examples:**
+
+  iex> MyModule.get_user_by_session_token("valid_token")
+  # Returns {:ok, %User{id: 1, ...}, todos: [...]}
+
+  iex> MyModule.get_user_by_session_token("invalid_token")
+  # Returns {:error, :invalid_token}
+
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)

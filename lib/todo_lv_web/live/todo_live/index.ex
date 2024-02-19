@@ -155,7 +155,7 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("search_todo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
-    todos = Todos.search(search_query)
+    todos = Todos.search_todo(search_query)
     IO.inspect(todos, label: "Search todos")
     filtered_todos = Enum.filter(todos, fn todo ->
       todo.user_id == socket.assigns.current_user.id

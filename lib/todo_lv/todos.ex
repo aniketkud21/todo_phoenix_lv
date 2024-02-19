@@ -9,12 +9,23 @@ defmodule TodoLv.Todos do
   alias TodoLv.Todos.Todo
 
   @doc """
-  Returns the list of todos.
+  Retrieves a list of all todos from the database, preloaded with their associated users and categories.
+
+  ## Return value
+
+  A list of %Todo{} structs, each preloaded with:
+
+  - The associated %User{} struct who created the todo.
+  - The associated %Category{} struct to which the todo belongs.
+
+  ## Note
+
+  - The order of the returned todos is not guaranteed.
 
   ## Examples
 
-      iex> list_todos()
-      [%Todo{}, ...]
+  iex> TodoLv.Todos.list_todos()
+  # Returns a list of %Todo{} structs, preloaded with users and categories
 
   """
   def list_todos do
@@ -25,6 +36,15 @@ defmodule TodoLv.Todos do
   Gets a single todo.
 
   Raises `Ecto.NoResultsError` if the Todo does not exist.
+
+  ## Return value
+
+  - A %Todo{} struct with the specified ID:
+      - Includes attributes like `action`, `resource`, etc.
+      - Preloaded with:
+          - The associated %User{} struct who created the todo.
+          - The associated %Category{} struct to which the todo belongs.
+          - The associated list of %Subtask{} structs of the todo.
 
   ## Examples
 
@@ -107,8 +127,21 @@ defmodule TodoLv.Todos do
     Todo.changeset(todo, attrs)
   end
 
-# --------------------------------------
-  def search(search_query) do
+  @doc """
+  Searches for todos matching a given search query.
+
+  The search is case-insensitive and matches the query against the todo title.
+
+  ## Examples
+
+      iex> search_todo("buy")
+      # Returns a list of todos containing "buy" in their title, ordered by title (ascending)
+
+      iex> search_todo("meeting")
+      # Returns a list of todos containing "meeting" in their title, ordered by title (ascending)
+
+  """
+  def search_todo(search_query) do
     search_query = "%#{search_query}%"
     IO.inspect(search_query)
     Todo
@@ -121,6 +154,3 @@ defmodule TodoLv.Todos do
     |> Repo.preload(:subtasks)
   end
 end
-
-
-# where([t], ilike(t.status, ^search_query))

@@ -1,6 +1,6 @@
 defmodule TodoLv.Subtasks do
   @moduledoc """
-  The Todos context.
+  The Subtasks context.
   """
 
   import Ecto.Query, warn: false
@@ -9,47 +9,53 @@ defmodule TodoLv.Subtasks do
   alias TodoLv.Subtasks.Subtask
 
   @doc """
-  Returns the list of todos.
+  Returns the list of subtasks.
 
   ## Examples
 
-      iex> list_todos()
-      [%Todo{}, ...]
+      iex> list_subtasks()
+      [%Subtask{}, ...]
 
   """
   def list_subtasks do
     Repo.all(Subtask)
   end
 
-  # def list_subtasks_by_todo do
-  #   Repo.a
-  # end
-
   @doc """
-  Gets a single todo.
+  Fetches a specific subtask by its ID, raising an error if it doesn't exist.
 
-  Raises `Ecto.NoResultsError` if the Todo does not exist.
+  **Arguments:**
 
-  ## Examples
+  - `id` (integer): The unique identifier of the subtask to retrieve.
 
-      iex> get_todo!(123)
-      %Todo{}
+  **Return value:**
 
-      iex> get_todo!(456)
-      ** (Ecto.NoResultsError)
+  - A %Subtask{} struct representing the subtask with the specified ID, preloaded with its associated todo.
+
+  **Raises:**
+
+  - `Ecto.NoResultsError`: If no subtask with the given ID is found.
+
+  ## Examples:
+
+  iex> TodoLv.Subtasks.get_subtask!(123)
+  # Returns the %Subtask{} struct with ID 123, preloaded with its todo
+
+  iex> TodoLv.Subtasks.get_subtask!(456)
+  # Raises `Ecto.NoResultsError` if no subtask with ID 456 exists
 
   """
   def get_subtask!(id), do: Repo.get!(Subtask, id) |> Repo.preload(:todo)
 
   @doc """
-  Creates a todo.
+  Creates a subtask.
 
   ## Examples
 
-      iex> create_todo(%{field: value})
-      {:ok, %Todo{}}
+      iex> create_subtask(%{field: value})
+      {:ok, %Subtask{}}
 
-      iex> create_todo(%{field: bad_value})
+      iex> create_subtask(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -64,14 +70,14 @@ defmodule TodoLv.Subtasks do
   end
 
   @doc """
-  Updates a todo.
+  Updates a subtask.
 
   ## Examples
 
-      iex> update_todo(todo, %{field: new_value})
-      {:ok, %Todo{}}
+      iex> update_subtask(subtask, %{field: new_value})
+      {:ok, %Subtask{}}
 
-      iex> update_todo(todo, %{field: bad_value})
+      iex> update_subtask(subtask, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -84,52 +90,31 @@ defmodule TodoLv.Subtasks do
   end
 
   @doc """
-  Deletes a todo.
+  Deletes a subtask.
 
   ## Examples
 
-      iex> delete_todo(todo)
-      {:ok, %Todo{}}
+      iex> delete_subtask(subtask)
+      {:ok, %Subtask{}}
 
-      iex> delete_todo(todo)
+      iex> delete_subtask(subtask)
       {:error, %Ecto.Changeset{}}
 
   """
   def delete_subtask(%Subtask{} = subtask) do
     Repo.delete(subtask)
   end
+    @doc """
+    Returns an `%Ecto.Changeset{}` for tracking subtask changes.
 
-#   @doc """
-#   Returns an `%Ecto.Changeset{}` for tracking todo changes.
+    ## Examples
 
-#   ## Examples
+        iex> change_subtask(subtask)
+        %Ecto.Changeset{data: %Subtask{}}
 
-#       iex> change_todo(todo)
-#       %Ecto.Changeset{data: %Todo{}}
-
-#   """
-#   def change_todo(%Todo{} = todo, attrs \\ %{}) do
-#     IO.inspect(attrs, label: "Attributes")
-#     Todo.changeset(todo, attrs)
-#   end
+    """
     def change_subtask(%Subtask{} = subtask, attrs \\ %{}) do
       IO.inspect(attrs, label: "Attributes")
       Subtask.changeset(subtask, attrs)
     end
-
-# # --------------------------------------
-#   def search(search_query) do
-#     search_query = "%#{search_query}%"
-#     IO.inspect(search_query)
-#     Todo
-#     |> order_by(asc: :title)
-#     |> where([t], ilike(t.title, ^search_query))
-#     #|> limit(5)
-#     |> Repo.all()
-#     |> Repo.preload(:user)
-#     |> Repo.preload(:category)
-#   end
 end
-
-
-# where([t], ilike(t.status, ^search_query))

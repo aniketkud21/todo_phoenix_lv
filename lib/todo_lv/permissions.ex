@@ -1,6 +1,6 @@
 defmodule TodoLv.Permissions do
   @moduledoc """
-  The Todos context.
+  The Permissions context.
   """
 
   import Ecto.Query, warn: false
@@ -9,27 +9,86 @@ defmodule TodoLv.Permissions do
   alias TodoLv.Permissions.Permission
 
   @doc """
-  Gets a single permission.
+  Gets a specific permission by its ID.
 
-  Raises `Ecto.NoResultsError` if the Permission does not exist.
+  Raises `Ecto.NoResultsError` if the permission does not exist.
 
   ## Examples
 
-      iex> get_permission!(123)
-      %Permission{}
+  iex> MyModule.get_permission!(123)
+  # Returns the %Permission{} struct for the permission with ID 123,
+  # preloaded with its associated role and user
 
-      iex> get_todo!(456)
-      ** (Ecto.NoResultsError)
+  iex> MyModule.get_permission!(456)
+  # Raises `Ecto.NoResultsError` if no permission with ID 456 exists
+
+  ## Return value
+
+  - A %Permission{} struct with the specified ID:
+      - Includes attributes like `action`, `resource`, etc.
+      - Preloaded with:
+          - The associated %Role{} struct
+          - The associated %User{} struct (if applicable)
 
   """
   def get_permission!(id) do
     Repo.get!(Permission, id) |> Repo.preload(:role) |> Repo.preload(:user)
   end
 
-  def get_permission_by_user_id(user_id, todo_id) do
+  @doc """
+  Fetches the specific permission a user has on a particular todo.
+
+  Raises `Ecto.NoResultsError` if no such permission exists or the user/todo combination is invalid.
+
+  ## Arguments
+
+  - `user_id` (integer): The unique identifier of the user.
+  - `todo_id` (integer): The unique identifier of the todo.
+
+  ## Return value
+
+  - A %Permission{} struct representing the user's permission on the todo, preloaded with its associated role.
+
+  ## Note
+
+  - If the user doesn't have any permission for the specified todo, `nil` is returned.
+
+  ## Examples
+
+  iex> MyModule.get_user_todo_permission(1, 2)
+  # Returns the %Permission{} for user 1 on todo 2, or nil if none exists
+
+  iex> MyModule.get_user_todo_permission(3, 4)
+  # Raises `Ecto.NoResultsError` if user 3 has no permission on todo 4 or either ID is invalid
+
+  """
+  def get_user_todo_permission(user_id, todo_id) do
     Repo.get_by!(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
   end
 
+  @doc """
+  Gets a specific permission by its todo_id.
+
+  Raises `Ecto.NoResultsError` if the permission does not exist.
+
+  ## Examples
+
+  iex> MyModule.get_permission!(123)
+  # Returns the %Permission{} struct for the permission with todo_id 123,
+  # preloaded with its associated role and user
+
+  iex> MyModule.get_permission!(456)
+  # Raises `Ecto.NoResultsError` if no permission with todo_id 456 exists
+
+  ## Return value
+
+  - A %Permission{} struct with the specified todo_id:
+      - Includes attributes like `action`, `resource`, etc.
+      - Preloaded with:
+          - The associated %Role{} struct
+          - The associated %User{} struct (if applicable)
+
+  """
   def get_permission_by_todo_id!(todo_id) do
     permissions = from p in Permission,
       where: p.todo_id == ^todo_id,
@@ -37,12 +96,6 @@ defmodule TodoLv.Permissions do
 
     Repo.all(permissions) |> Repo.preload(:role) |> Repo.preload(:user)
   end
-
-  def delete_permission(%Permission{} = permission) do
-    Repo.delete(permission)
-  end
-
-  #def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)
 
   @doc """
   Creates a permission.
@@ -63,33 +116,28 @@ defmodule TodoLv.Permissions do
     |> Repo.insert()
   end
 
-  # @doc """
-  # Deletes a todo.
+  @doc """
+  Deletes a specified permission.
 
-  # ## Examples
+  **Preconditions:**
 
-  #     iex> delete_todo(todo)
-  #     {:ok, %Todo{}}
+  - The provided `permission` argument must be a valid %Permission{} struct.
 
-  #     iex> delete_todo(todo)
-  #     {:error, %Ecto.Changeset{}}
+  **Returns:**
 
-  # """
-  # def delete_todo(%Todo{} = todo) do
-  #   Repo.delete(todo)
-  # end
+  - `:ok` if the permission is successfully deleted.
+  - An `Ecto.StaleDataError` if the permission has already been deleted by another process.
 
-  # @doc """
-  # Returns an `%Ecto.Changeset{}` for tracking todo changes.
+  ## Examples
 
-  # ## Examples
+  iex> MyModule.delete_permission(%Permission{id: 123})
+  # Returns :ok if the permission with ID 123 is deleted
 
-  #     iex> change_todo(todo)
-  #     %Ecto.Changeset{data: %Todo{}}
+  iex> MyModule.delete_permission(%Permission{id: 456})
+  # Raises `Ecto.StaleDataError` if the permission with ID 456 is already deleted
 
-  # """
-  # def change_todo(%Todo{} = todo, attrs \\ %{}) do
-  #   IO.inspect(attrs, label: "Attributes")
-  #   Todo.changeset(todo, attrs)
-  # end
+  """
+  def delete_permission(%Permission{} = permission) do
+    Repo.delete(permission)
+  end
 end

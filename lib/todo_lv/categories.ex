@@ -9,108 +9,49 @@ defmodule TodoLv.Categories do
   alias TodoLv.Categories.Category
 
   @doc """
-  Returns the list of categories.
+  Retrieves a list of all categories from the database, preloaded with their associated todos.
+
+  ## Return value
+
+  A list of %Category{} structs, each preloaded with a list of associated %Todo{} structs.
+
+  ## Note
+
+  - The categories returned may be unordered.
+  - The number of preloaded todos per category may vary.
 
   ## Examples
 
-      iex> list_categories()
-      [%Category{}, ...]
+  iex> TodoLv.Categories.list_categories()
+  # Returns a list of %Category{} structs, each with preloaded %Todo{} structs
 
-  """
+"""
   def list_categories do
     Repo.all(Category) |> Repo.preload(:todos)
   end
 
   @doc """
-  Returns the list of categories with mapping to id.
+  Returns a list of key-value pairs mapping category names to their corresponding IDs.
 
-  ## Examples
+  **Please note:** In this specific implementation, the output is always ordered alphabetically by category name, resulting in a fixed list of `[{"Study", 1}, {"Household", 2}, {"Work", 3}]`. This might not be the case in other scenarios where the `Category` table contains different data or the sorting logic changes.
+
+  This is useful for creating dropdown menus, form selections, or other situations where you need to display both the category name and its ID.
+
+  ## Return value
+
+  A list of tuples, where each tuple contains:
+
+  * The category name (String)
+  * The category ID (Integer)
+
+  ## Example
 
       iex> list_categories_mapping()
       [{"Study", 1}, {"Household", 2}, {"Work", 3}]
+
   """
   def list_categories_mapping() do
     Repo.all(Category)
     |> Enum.map(&{&1.name, &1.id})
   end
-#   @doc """
-#   Gets a single todo.
-
-#   Raises `Ecto.NoResultsError` if the Todo does not exist.
-
-#   ## Examples
-
-#       iex> get_todo!(123)
-#       %Todo{}
-
-#       iex> get_todo!(456)
-#       ** (Ecto.NoResultsError)
-
-#   """
-#   def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user)
-
-#   @doc """
-#   Creates a todo.
-
-#   ## Examples
-
-#       iex> create_todo(%{field: value})
-#       {:ok, %Todo{}}
-
-#       iex> create_todo(%{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
-
-#   """
-#   def create_todo(attrs \\ %{}) do
-#     %Todo{}
-#     |> Todo.changeset(attrs)
-#     |> Repo.insert()
-#   end
-
-#   @doc """
-#   Updates a todo.
-
-#   ## Examples
-
-#       iex> update_todo(todo, %{field: new_value})
-#       {:ok, %Todo{}}
-
-#       iex> update_todo(todo, %{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
-
-#   """
-#   def update_todo(%Todo{} = todo, attrs) do
-#     todo
-#     |> Todo.changeset(attrs)
-#     |> Repo.update()
-#   end
-
-#   @doc """
-#   Deletes a todo.
-
-#   ## Examples
-
-#       iex> delete_todo(todo)
-#       {:ok, %Todo{}}
-
-#       iex> delete_todo(todo)
-#       {:error, %Ecto.Changeset{}}
-
-#   """
-#   def delete_todo(%Todo{} = todo) do
-#     Repo.delete(todo)
-#   end
-
-#   @doc """
-#   Returns an `%Ecto.Changeset{}` for tracking todo changes.
-
-#   ## Examples
-
-#       iex> change_todo(todo)
-#       %Ecto.Changeset{data: %Todo{}}
-
-#   """
-#   def change_todo(%Todo{} = todo, attrs \\ %{}) do
-#     Todo.changeset(todo, attrs)
-#   end
 end
