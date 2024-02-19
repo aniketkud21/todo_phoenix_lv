@@ -10,6 +10,8 @@ defmodule TodoLvWeb.TodoLive.Show do
   @impl true
   def mount(params, _session, socket) do
     IO.inspect(params["id"])
+
+    Phoenix.PubSub.subscribe(TodoLv.PubSub, "subtasks")
     # user = Accounts.get_user_by_session_token(session["user_token"])
     # %{view: view, edit: edit} = check_permission(socket.assigns.current_user.id, params["id"])
     {:ok,
@@ -66,6 +68,13 @@ defmodule TodoLvWeb.TodoLive.Show do
 
     Todos.update_todo(todo, %{status: Enum.at(list, 0)})
 
+    {:noreply,
+    socket
+    |> stream_insert(:subtasks, subtask)}
+  end
+
+  def handle_info({:new_subtask, subtask}, socket) do
+    IO.inspect("yesss")
     {:noreply,
     socket
     |> stream_insert(:subtasks, subtask)}

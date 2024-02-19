@@ -87,7 +87,8 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_todo(socket, :new, subtask_params) do
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
-        notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
+        # notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
+        Phoenix.PubSub.broadcast(TodoLv.PubSub, "subtasks", {:new_subtask, subtask})
         {:noreply,
          socket
          |> put_flash(:info, "Subtask created successfully")
