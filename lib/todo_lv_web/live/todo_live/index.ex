@@ -1,4 +1,5 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  alias TodoLv.Permissions
   alias TodoLv.Roles
   alias TodoLv.Categories
   use TodoLvWeb, :live_view
@@ -6,14 +7,12 @@ defmodule TodoLvWeb.TodoLive.Index do
   alias TodoLv.Todos
   alias TodoLv.Todos.Todo
 
+  # Assigns current user to socket
   on_mount {TodoLvWeb.UserAuth, :mount_current_user}
 
   @impl true
   def mount(_params, _session, socket) do
     categories = Categories.list_categories_mapping()
-    # cg = Categories.list_categories()
-    # IO.inspect(cg, label: "llc2")
-    # IO.inspect(categories, label: "llc")
 
     {:ok,
       socket
@@ -21,7 +20,7 @@ defmodule TodoLvWeb.TodoLive.Index do
       |> assign(:page_number, 1)
       |> assign(:toggle_bookmark, false)
       |> assign(:category, categories)
-      |> assign(:options, helper([]))}
+      |> assign(:options, helper([]))} # maybe this is neended for :new apply action instead of here
   end
 
   @impl true
@@ -33,46 +32,62 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    IO.inspect(id, label: "Id in edit")
+    IO.inspect(socket, label: "Socket in edit")
+
     todo = Todos.get_todo!(id)
     subtasks = todo.subtasks
 
     options = helper(subtasks)
     IO.inspect(options, label: "Options")
+    cond do
+      check_permission(socket.assigns.current_user.id, todo.id) == true ->
+        IO.inspect(todo, label: "fight")
+        socket
+        |> assign(:page_title, "Edit Todo")
+        |> assign(:todo, Todos.get_todo!(id))
+        |> assign(:options, options)
+        |> assign(:creator_id, todo.user_id)
 
-    socket
-    |> assign(:page_title, "Edit Todo")
-    |> assign(:todo, Todos.get_todo!(id))
-    |> assign(:options, options)
-    # |> assign(:category, categories)
-    # |> assign(:max_page_number, max_page_no)
-    # |> stream(:todos, paginated_todos)
+      check_permission(socket.assigns.current_user.id, todo.id) == false ->
+
+        socket
+        |> put_flash(:error, "View only: You cannot edit this todo.")
+        |> redirect(to: "/todos")
+    end
+    # socket
+    # |> assign(:page_title, "Edit Todo")
+    # |> assign(:todo, Todos.get_todo!(id))
+    # |> assign(:options, options)
   end
 
   defp apply_action(socket, :share, %{"id" => id}) do
     IO.inspect("in share")
-
+    IO.inspect(id)
     roles = Roles.list_roles()
     |> Enum.filter(fn role -> role.role_name != "Creator" end)
     |> Enum.map(fn role -> role.role_name end)
 
-    # paginated_todos = handle_pagination(socket, socket.assigns.page_number)
+    cond do
+      check_permission(socket.assigns.current_user.id, id) == true ->
+        socket
+        |> assign(:page_title, "Share Todo")
+        |> assign(:todo, Todos.get_todo!(id))
+        |> assign(:roles, roles)
 
-    # max_page_no = div(length(socket.assigns.current_user.todos),4)
-
-    socket
-    |> assign(:page_title, "Share Todo")
-    |> assign(:todo, Todos.get_todo!(id))
-    |> assign(:roles, roles)
-
-    #|> assign(:max_page_number, max_page_no)
-    #|> stream(:todos, paginated_todos)
-    #|> assign(shareform: to_form(%{status: "Viewer"}))
+      check_permission(socket.assigns.current_user.id, id) == false ->
+        socket
+        |> put_flash(:error, "Access denied: You cannot adjust the sharing settings for this todo.")
+        |> redirect(to: "/todos")
+    end
   end
 
   defp apply_action(socket, :new, _params) do
+
     socket
     |> assign(:page_title, "New Todo")
     |> assign(:todo, %Todo{})
+    |> assign(:creator_id, socket.assigns.current_user.id)
   end
 
   defp apply_action(socket, :index, _params) do
@@ -85,6 +100,11 @@ defmodule TodoLvWeb.TodoLive.Index do
     {:noreply,
     socket
     |> stream_insert(:todos, todo)}
+  end
+
+  def handle_info({TodoLvWeb.TodoLive.FormComponent, {:msg, msg}}, socket) do
+    IO.inspect(msg)
+    {:noreply, socket}
   end
 
   #----------------- Buttons --------------
@@ -189,6 +209,14 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   #------------- Private Helper functions ---------------
+
+  defp check_permission(user_id, todo_id) do
+    permission = Permissions.get_user_todo_permission(user_id, todo_id)
+    cond do
+      permission.role_id==3 || permission.role_id==1 -> true
+      true -> false
+    end
+  end
 
   defp handle_pagination(socket, current_page_number) do
     paginated_todos = socket.assigns.current_user.todos

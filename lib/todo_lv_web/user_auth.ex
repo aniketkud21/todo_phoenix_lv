@@ -177,7 +177,7 @@ defmodule TodoLvWeb.UserAuth do
 
   def on_mount(:check_permission_level, params, session, socket) do
     socket = mount_current_user(socket, session)
-
+      # Raises No Ecto Results, if no entry
       permission = Permissions.get_user_todo_permission(socket.assigns.current_user.id, params["id"])
       cond do
         permission.role_id==2

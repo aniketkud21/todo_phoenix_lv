@@ -45,40 +45,20 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def update(%{todo: todo} = assigns, socket) do
+    IO.inspect(assigns)
+    IO.inspect(socket)
+
+    changeset = Todos.change_todo(todo)
+    {:ok,
+    socket
+    |> assign(assigns)
+    |> assign_form(changeset)}
+
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
     # IO.inspect(todo)
     #IO.inspect(assigns, label: "Assigns in new todo")
 
-    cond do
-      todo.id == nil ->
-        changeset = Todos.change_todo(todo)
-        {:ok,
-        socket
-        |> assign(assigns)
-        |> assign_form(changeset)}
-      check_permission(assigns.current_user.id, todo.id) == true ->
-        changeset = Todos.change_todo(todo)
-
-        {:ok,
-        socket
-        |> assign(assigns)
-        |> assign(:creator_id, todo.user_id)
-        |> assign_form(changeset)}
-      check_permission(assigns.current_user.id, todo.id) == false ->
-        {:ok,
-         socket
-         |> put_flash(:error, "Unauthorized")
-         |> push_navigate(to: ~p"/unauthorized")}
-    end
-  end
-
-  defp check_permission(user_id, todo_id) do
-    permission = Permissions.get_user_todo_permission(user_id, todo_id)
-    cond do
-      permission.role_id==3 || permission.role_id==1 -> true
-      true -> false
-    end
   end
 
   # @impl true
@@ -96,16 +76,20 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   @impl true
   def handle_event("save", %{"todo" => todo_params}, socket) do
     IO.inspect(todo_params, label: "Socket on save")
-    IO.inspect(socket.assigns.action)
-    if(socket.assigns.action == :edit) do
-      todo_edit_params = todo_params
-      |> Map.put_new("user_id" , socket.assigns.creator_id)
-      save_todo(socket, socket.assigns.action, todo_edit_params)
-    else
-      todo_new_params = todo_params
-      |> Map.put_new("user_id" , socket.assigns.current_user.id)
-      save_todo(socket, socket.assigns.action, todo_new_params)
-    end
+    IO.inspect(socket.assigns)
+    # if(socket.assigns.action == :edit) do
+    #   todo_edit_params = todo_params
+    #   |> Map.put_new("user_id" , socket.assigns.creator_id)
+    #   save_todo(socket, socket.assigns.action, todo_edit_params)
+    # else
+    #   todo_new_params = todo_params
+    #   |> Map.put_new("user_id" , socket.assigns.current_user.id)
+    #   save_todo(socket, socket.assigns.action, todo_new_params)
+    # end
+
+    todo_edit_params = todo_params
+    |> Map.put_new("user_id" , socket.assigns.creator_id)
+    save_todo(socket, socket.assigns.action, todo_edit_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do
