@@ -16,33 +16,33 @@ defmodule TodoLvWeb.RoomChannel do
   #   {:ok, socket}
   # end
 
-  def handle_in("new_msg", %{"body" => body}, socket) do
+  def handle_in("title_input_value", %{"body" => body}, socket) do
     IO.inspect(body)
-    broadcast!(socket, "new_msg", %{body: body})
+    broadcast!(socket, "title_input_value", %{body: body})
     {:noreply, socket}
   end
 
-  def handle_in("new_msg2", %{"body" => body}, socket) do
+  def handle_in("desc_input_value", %{"body" => body}, socket) do
     IO.inspect(body)
-    broadcast!(socket, "new_msg2", %{body: body})
+    broadcast!(socket, "desc_input_value", %{body: body})
     {:noreply, socket}
   end
 
-  def handle_in("new_msg3", %{"body" => body}, socket) do
+  def handle_in("status_input_value", %{"body" => body}, socket) do
     IO.inspect(body)
-    broadcast!(socket, "new_msg3", %{body: body})
+    broadcast!(socket, "status_input_value", %{body: body})
     {:noreply, socket}
   end
 
-  def handle_in("new_msg4", %{"body" => body}, socket) do
+  def handle_in("category_input_value", %{"body" => body}, socket) do
     IO.inspect(body)
-    broadcast!(socket, "new_msg4", %{body: body})
+    broadcast!(socket, "category_input_value", %{body: body})
     {:noreply, socket}
   end
 
-  def handle_in("new_msg5", %{"body" => body}, socket) do
+  def handle_in("like_input_value", %{"body" => body}, socket) do
     IO.inspect(body)
-    broadcast!(socket, "new_msg5", %{body: body})
+    broadcast!(socket, "like_input_value", %{body: body})
     {:noreply, socket}
   end
 end

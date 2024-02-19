@@ -77,48 +77,49 @@ Hooks.ChannelJoin = {
         
       titleInput.addEventListener("input", event => {
         console.log(titleInput.value)
-        channel.push("new_msg", {body: titleInput.value})
+        channel.push("title_input_value", {body: titleInput.value})
       })
         
       descInput.addEventListener("input", event => {
         console.log(descInput.value)
-        channel.push("new_msg2", {body: descInput.value})
+        channel.push("desc_input_value", {body: descInput.value})
       })
 
       statusInput.addEventListener("input", event => {
         console.log(statusInput.value)
-        channel.push("new_msg3", {body: statusInput.value})
+        channel.push("status_input_value", {body: statusInput.value})
       })
 
       categoryInput.addEventListener("input", event => {
         console.log(categoryInput.value)
-        channel.push("new_msg4", {body: categoryInput.value})
+        channel.push("category_input_value", {body: categoryInput.value})
       })
 
       likeInput.addEventListener("input", event => {
-        console.log(likeInput.value)
-        channel.push("new_msg5", {body: likeInput.value})
+        console.log(likeInput.checked)
+        // console.log(likeInput.value)
+        channel.push("like_input_value", {body: likeInput.checked})
       })
         
-      channel.on("new_msg", payload => {
+      channel.on("title_input_value", payload => {
         titleInput.value = `${payload.body}`
       })
         
-      channel.on("new_msg2", payload => {
+      channel.on("desc_input_value", payload => {
         descInput.value = `${payload.body}`
       })
 
-      channel.on("new_msg3", payload => {
+      channel.on("status_input_value", payload => {
         statusInput.value = `${payload.body}`
       })
 
-      channel.on("new_msg4", payload => {
+      channel.on("category_input_value", payload => {
         categoryInput.value = `${payload.body}`
       })
 
-      channel.on("new_msg5", payload => {
-        console.log(payload)
-        //likeInput.checked = !likeInput.checked  // `${payload.body}`
+      channel.on("like_input_value", payload => {
+        likeInput.value = payload.body
+        likeInput.checked = payload.body
       })
     } else {
       console.error('Todo ID not found in the URL.');
