@@ -18,7 +18,7 @@ defmodule TodoLv.Subtasks do
 
   """
   def list_subtasks do
-    Repo.all(Subtask)
+    Repo.all(Subtask) |> Repo.preload(:todo)
   end
 
   @doc """

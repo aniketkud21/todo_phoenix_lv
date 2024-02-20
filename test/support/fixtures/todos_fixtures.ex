@@ -26,6 +26,6 @@ defmodule TodoLv.TodosFixtures do
       })
       |> TodoLv.Todos.create_todo()
 
-    TodoLv.Todos.get_todo!(todo.id)
+    TodoLv.Todos.get_todo!(todo.id) # on create it is not preloaded
   end
 end

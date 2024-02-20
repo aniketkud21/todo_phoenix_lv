@@ -15,6 +15,8 @@ defmodule TodoLv.CategoriesFixtures do
       })
       |> TodoLv.Categories.create_category()
 
-    category
+    TodoLv.Categories.get_category!(category.id)
   end
+
+
 end

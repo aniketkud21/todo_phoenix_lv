@@ -75,4 +75,22 @@ defmodule TodoLv.Categories do
     |> Category.changeset(attrs)
     |> Repo.insert()
   end
+
+  @doc """
+  Gets a single category.
+
+  Raises `Ecto.NoResultsError` if the Category does not exist.
+
+  ## Note -- Only for tests
+
+  ## Examples
+
+      iex> get_category!(123)
+      %Category{}
+
+      iex> get_category!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_category!(id), do: Repo.get!(Category, id) |> Repo.preload(:todos)
 end

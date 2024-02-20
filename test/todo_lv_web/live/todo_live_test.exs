@@ -17,7 +17,8 @@ defmodule TodoLvWeb.TodoLiveTest do
     setup [:create_todo]
 
     test "lists all todos", %{conn: conn, todo: todo} do
-      {:ok, _index_live, html} = live(conn, ~p"/todos")
+      IO.inspect(conn, label: "hello conn")
+      {:ok, _index_live, html} = live(conn |> log_in_user(todo.user), ~p"/todos")
 
       assert html =~ "Listing Todos"
       assert html =~ todo.status
