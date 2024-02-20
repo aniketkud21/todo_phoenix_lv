@@ -54,4 +54,25 @@ defmodule TodoLv.Categories do
     Repo.all(Category)
     |> Enum.map(&{&1.name, &1.id})
   end
+
+  @doc """
+  Creates a category.
+
+  ## Note -- Only for tests
+
+  ## Examples
+
+      iex> create_category(%{field: value})
+      {:ok, %Category{}}
+
+      iex> create_category(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_category(attrs \\ %{}) do
+    IO.inspect(attrs, label: "Attributes in create")
+    %Category{}
+    |> Category.changeset(attrs)
+    |> Repo.insert()
+  end
 end

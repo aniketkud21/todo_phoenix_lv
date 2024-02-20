@@ -8,16 +8,24 @@ defmodule TodoLv.TodosFixtures do
   Generate a todo.
   """
   def todo_fixture(attrs \\ %{}) do
+    import TodoLv.AccountsFixtures
+    import TodoLv.CategoriesFixtures
+
+    user = user_fixture()
+    category = category_fixture()
+
     {:ok, todo} =
       attrs
       |> Enum.into(%{
         desc: "some desc",
         like: true,
         status: "some status",
-        title: "some title"
+        title: "some title",
+        user_id: user.id,
+        category_id: category.id
       })
       |> TodoLv.Todos.create_todo()
 
-    todo
+    TodoLv.Todos.get_todo!(todo.id)
   end
 end

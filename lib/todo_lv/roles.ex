@@ -52,4 +52,25 @@ defmodule TodoLv.Roles do
 
   """
   def get_role_by_name!(role_name), do: Repo.get_by!(Role, role_name: role_name)
+
+  @doc """
+  Creates a role.
+
+  ## Note -- Only for tests
+
+  ## Examples
+
+      iex> create_role(%{field: value})
+      {:ok, %Role{}}
+
+      iex> create_role(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_role(attrs \\ %{}) do
+    IO.inspect(attrs, label: "Attributes in create")
+    %Role{}
+    |> Role.changeset(attrs)
+    |> Repo.insert()
+  end
 end

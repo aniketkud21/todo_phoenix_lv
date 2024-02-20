@@ -29,7 +29,7 @@ defmodule TodoLv.Todos do
 
   """
   def list_todos do
-    Repo.all(Todo) |> Repo.preload(:user) |> Repo.preload(:category)
+    Repo.all(Todo) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)
   end
 
   @doc """
