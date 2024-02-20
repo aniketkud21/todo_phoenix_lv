@@ -86,8 +86,8 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
   @impl true
   def handle_event("share", %{"email" => email, "role" => role}, socket) do
     #IO.inspect(params, label: "Save params")
-    user_id = Accounts.get_user_by_email(email)
-    role_id = Roles.get_role_by_name!(role)
+    user_id = Accounts.get_user_by_email(email).id
+    role_id = Roles.get_role_by_name!(role).id
 
     IO.inspect(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email), "role_id" => Roles.get_role_by_name!(role)}, label: "to save struct")
 
@@ -98,22 +98,44 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
         |> put_flash(:error, "Todo not shared successfully")}
         #|> push_navigate(to: socket.assigns.navigate)}
     else
-      case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
-        {:ok, _permission} ->
-          all_permissions = Permissions.get_permission_by_todo_id!(socket.assigns.todo.id)
-          {:noreply,
-          socket
-          |> put_flash(:info, "Todo shared successfully")
-          |> stream(:permissions, all_permissions, reset: true)}
-          # stream_insert not working
-          #|> push_navigate(to: socket.assigns.navigate)}
+      res = Permissions.get_user_todo_permission(user_id, socket.assigns.todo.id)
+      case res do
+        nil ->
+          IO.inspect("already wrong")
+          case Permissions.create_permission(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
+            {:ok, _permission} ->
+              all_permissions = Permissions.get_permission_by_todo_id!(socket.assigns.todo.id)
+              {:noreply,
+              socket
+              |> put_flash(:info, "Todo shared successfully")
+              |> stream(:permissions, all_permissions, reset: true)}
+              # stream_insert not working
+              #|> push_navigate(to: socket.assigns.navigate)}
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          IO.inspect(changeset)
-          {:noreply,
-            socket
-            |> assign(shareform: to_form(%{role: "", email: ""}))}
+            {:error, %Ecto.Changeset{} = changeset} ->
+              IO.inspect(changeset)
+              {:noreply,
+                socket
+                |> assign(shareform: to_form(%{role: "", email: ""}))}
+          end
+        permission ->
+          IO.inspect("already")
+          case Permissions.update_permission(permission, %{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email).id, "role_id" => Roles.get_role_by_name!(role).id}) do
+            {:ok, _permission} ->
+              all_permissions = Permissions.get_permission_by_todo_id!(socket.assigns.todo.id)
+              {:noreply,
+              socket
+              |> put_flash(:info, "Todo updated successfully")
+              |> stream(:permissions, all_permissions, reset: true)}
+            {:error, %Ecto.Changeset{} = changeset} ->
+              IO.inspect(changeset)
+              {:noreply,
+                socket
+                |> put_flash(:error, "Todo not updated")
+                |> assign(shareform: to_form(%{role: "", email: ""}))}
+          end
       end
+
     end
   end
 end

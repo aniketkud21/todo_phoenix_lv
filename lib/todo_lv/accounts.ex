@@ -23,7 +23,7 @@ defmodule TodoLv.Accounts do
 
   """
   def get_user_by_email(email) when is_binary(email) do
-    Repo.get_by(User, email: email)
+    Repo.get_by(User, email: email) |> Repo.preload(todos: [:category])
   end
 
   @doc """

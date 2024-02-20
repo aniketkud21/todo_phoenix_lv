@@ -63,7 +63,7 @@ defmodule TodoLv.Permissions do
 
   """
   def get_user_todo_permission(user_id, todo_id) do
-    Repo.get_by!(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
+    Repo.get_by(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:role)
   end
 
   @doc """
@@ -97,6 +97,35 @@ defmodule TodoLv.Permissions do
     Repo.all(permissions) |> Repo.preload(:role) |> Repo.preload(:user)
   end
 
+  # def create_or_update_permission(user_id, todo_id, role_id) do
+  #   case Repo.get_by(Permission, user_id: user_id, todo_id: todo_id) do
+  #     nil ->
+  #       create_permission(user_id, todo_id, role_id)
+
+  #     permission ->
+  #       update_permission(permission, role_id)
+  #   end
+  #   list_permissions_for_todo(todo_id)
+  # end
+
+  # def create_permission(user_id, todo_id, role_id) do
+  #   changeset = Permission.changeset(%Permission{}, %{user_id: user_id, todo_id: todo_id, role_id: role_id})
+  #   IO.inspect("Permission created")
+  #   case Repo.insert(changeset) do
+  #     {:ok, permission} -> {:ok, permission}
+  #     {:error, changeset} -> {:error, changeset}
+  #   end
+  # end
+
+  # def update_permission(permission, role_id) do
+  #   changeset = Permission.changeset(permission, %{role_id: role_id})
+  #   IO.inspect("Permission updated")
+  #   case Repo.update(changeset) do
+  #     {:ok, updated_permission} -> {:ok, updated_permission}
+  #     {:error, changeset} -> {:error, changeset}
+  #   end
+  # end
+
   @doc """
   Creates a permission.
 
@@ -114,6 +143,26 @@ defmodule TodoLv.Permissions do
     %Permission{}
     |> Permission.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @doc """
+  Updates a todo.
+
+  ## Examples
+
+      iex> update_todo(todo, %{field: new_value})
+      {:ok, %Todo{}}
+
+      iex> update_todo(todo, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_permission(%Permission{} = permission, attrs) do
+    IO.inspect(permission, label: "todo In updatetodo")
+    IO.inspect(attrs, label: "attrs in updatetodo")
+    permission
+    |> Permission.changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
