@@ -4,7 +4,9 @@ defmodule TodoLvWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias TodoLv.Roles.Role
   alias TodoLv.Permissions
+  alias TodoLv.Roles
   alias TodoLv.Accounts
 
   # Make the remember me cookie valid for 60 days.
@@ -178,69 +180,31 @@ defmodule TodoLvWeb.UserAuth do
   def on_mount(:check_permission_level, params, session, socket) do
     socket = mount_current_user(socket, session)
       # Raises No Ecto Results, if no entry
+      # IO.inspect(socket.assigns.current_user.id)
+      # IO.inspect(params["id"])
+      # IO.inspect("checking auth")
       permission = Permissions.get_user_todo_permission(socket.assigns.current_user.id, params["id"])
+      # IO.inspect(permission, label: "Checking permission")
+      # IO.inspect(Roles.get_role_by_name!("Creator"), label: "Role checking")
       cond do
-        permission.role_id==2
+        permission == nil ->
+          {:halt, socket
+          |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/todos")}
+        permission.role_id==Roles.get_role_by_name!("Viewer").id
           -> {:cont, socket
               |> Phoenix.Component.assign(:view, true)
               |> Phoenix.Component.assign(:edit, false)}
              # |> assign(:view, true)
              #|> assign(:edit, false)}
-        permission.role_id==3 || permission.role_id==1
+        permission.role_id==Roles.get_role_by_name!("Creator").id || permission.role_id==Roles.get_role_by_name!("Editor").id
           -> {:cont, socket
               |> Phoenix.Component.assign(:view, true)
               |> Phoenix.Component.assign(:edit, true)}
             #  |> assign(:view, true)
             #  |> assign(:edit, true)}
-        # permission == nil ->
-        #   {:halt, socket
-        #   |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
-        #   |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
+
       end
-
-
-    # case Permissions.get_permission_by_user_id!(socket.assigns.current_user.id, params["id"]) do
-    #   permission.role_id==2
-    #     -> {:cont, socket
-    #        |> assign(:view, true)
-    #        |> assign(:edit, false)}
-    #   permission.role_id==3 || permission.role_id==1
-    #     -> {:cont, socket
-    #        |> assign(:view, true)
-    #        |> assign(:edit, true)}
-    #   nil
-    #     -> {:halt, socket
-    #         |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
-    #         |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
-    # end
-    #IO.inspect(permission)
-
-  end
-
-  def on_mount(:check_edit_permission, socket) do
-    IO.inspect("something")
-    {:cont, socket}
-    #socket = mount_current_user(socket, session)
-
-      # permission = Permissions.get_permission_by_user_id(socket.assigns.current_user.id, params["id"])
-      # cond do
-      #   permission.role_id==2
-      #     -> {:cont, socket
-      #         |> Phoenix.Component.assign(:view, true)
-      #         |> Phoenix.Component.assign(:edit, false)}
-      #        # |> assign(:view, true)
-      #        #|> assign(:edit, false)}
-      #   permission.role_id==3 || permission.role_id==1
-      #     -> {:cont, socket
-      #         |> Phoenix.Component.assign(:view, true)
-      #         |> Phoenix.Component.assign(:edit, true)}
-            #  |> assign(:view, true)
-            #  |> assign(:edit, true)}
-        # permission == nil ->
-        #   {:halt, socket
-        #   |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
-        #   |> Phoenix.LiveView.redirect(to: ~p"/unauthorized")}
-      # end
   end
 
   defp mount_current_user(socket, session) do

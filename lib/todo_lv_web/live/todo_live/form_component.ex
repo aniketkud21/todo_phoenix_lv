@@ -5,15 +5,15 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   alias TodoLv.Todos
 
-  on_mount {TodoLvWeb.UserAuth, :check_edit_permission}
-
   @impl true
   def render(assigns) do
+    IO.inspect(assigns, label: "in render")
     ~H"""
     <div>
       <.header>
         <%= @title %>
         <:subtitle>Use this form to manage todo records in your database.</:subtitle>
+
       </.header>
 
       <.simple_form
@@ -58,7 +58,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     # |> Map.put("user_id" , socket.assigns.current_user.id)
     # IO.inspect(todo)
     #IO.inspect(assigns, label: "Assigns in new todo")
-
   end
 
   # @impl true
@@ -111,7 +110,11 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   defp save_todo(socket, :new, todo_params) do
     case Todos.create_todo(todo_params) do
       {:ok, todo} ->
-        Permissions.create_permission(%{"todo_id" => todo.id, "user_id" => socket.assigns.current_user.id, "role_id" => Roles.get_role_by_name!("Creator").id})
+        permission_struct = %{"todo_id" => todo.id,
+                              "user_id" => socket.assigns.current_user.id,
+                              "role_id" => Roles.get_role_by_name!("Creator").id}
+
+        Permissions.create_permission(permission_struct)
 
         notify_parent({:saved, todo})
         IO.inspect(socket)

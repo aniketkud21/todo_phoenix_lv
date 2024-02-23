@@ -24,7 +24,7 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
         <.input field={@subTaskForm[:status]} type="select" options={["Hold", "In-Progress", "Complete"]} label="Status"/>
 
         <:actions>
-          <.button phx-disable-with="Saving...">Save Todo</.button>
+          <.button phx-disable-with="Saving...">Save Subtask</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -65,14 +65,14 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
     IO.inspect(subtask_params, label: "Socket on save")
 
-    save_todo(socket, socket.assigns.action, subtask_params)
+    save_subtask(socket, socket.assigns.action, subtask_params)
   end
 
-  defp save_todo(socket, :edit, subtask_params) do
+  defp save_subtask(socket, :edit, subtask_params) do
     case Subtasks.update_subtask(socket.assigns.subtask, subtask_params) do
       {:ok, subtask} ->
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
-
+        IO.inspect("saving with flash")
         {:noreply,
          socket
          |> put_flash(:info, "Subtask updated successfully")
@@ -84,10 +84,11 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
     end
   end
 
-  defp save_todo(socket, :new, subtask_params) do
+  defp save_subtask(socket, :new, subtask_params) do
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
         # notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
+        IO.inspect("creating new subtask")
         Phoenix.PubSub.broadcast(TodoLv.PubSub, "subtasks", {:new_subtask, subtask})
         {:noreply,
          socket

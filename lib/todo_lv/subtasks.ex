@@ -60,13 +60,9 @@ defmodule TodoLv.Subtasks do
 
   """
   def create_subtask(attrs \\ %{}) do
-    IO.inspect(attrs, label: "Attributes in create")
-    something = %Subtask{}
+    %Subtask{}
     |> Subtask.changeset(attrs)
     |> Repo.insert()
-
-    IO.inspect(something, label: "Why fails")
-    something
   end
 
   @doc """
@@ -82,8 +78,6 @@ defmodule TodoLv.Subtasks do
 
   """
   def update_subtask(%Subtask{} = subtask, attrs) do
-    IO.inspect(subtask, label: "todo In updatetodo")
-    IO.inspect(attrs, label: "attrs in updatetodo")
     subtask
     |> Subtask.changeset(attrs)
     |> Repo.update()
@@ -114,7 +108,6 @@ defmodule TodoLv.Subtasks do
 
     """
     def change_subtask(%Subtask{} = subtask, attrs \\ %{}) do
-      IO.inspect(attrs, label: "Attributes")
       Subtask.changeset(subtask, attrs)
     end
 end

@@ -1,4 +1,5 @@
 defmodule TodoLv.PermissionsTest do
+  alias TodoLv.Permissions.Permission
   alias TodoLv.Permissions
   use TodoLv.DataCase
 
@@ -15,9 +16,25 @@ defmodule TodoLv.PermissionsTest do
       assert Permissions.get_user_todo_permission(permission.user_id, permission.todo_id) == permission
     end
 
-    test "get_permission_by_todo_id/1 returns the permission with a given todo_id" do
+    # # assert to be written
+    # test "get_permissions_by_todo_id/1 returns the permissions with a given todo_id" do
+    #   permission = permission_fixture()
+    #   assert Permissions.get_permissions_by_todo_id!(permission.todo_id)
+    # end
+
+    # # to be written
+    # test "update_permission/2 with valid data updates the permission" do
+    #   permission = permission_fixture()
+    #   update_attrs = %{user_id: 3, todo_id: 6, role_id: 2}
+
+    #   assert {:ok, %Permission{} = permission} = Permissions.update_permission(permission, update_attrs)
+    #   assert permission.role_id == 2
+    # end
+
+    test "delete_permission/1 deletes the permission" do
       permission = permission_fixture()
-      assert Permissions.get_permission_by_todo_id!(permission.todo_id)
+      assert {:ok, %Permission{}} = Permissions.delete_permission(permission)
+      assert_raise Ecto.NoResultsError, fn -> Permissions.get_permission!(permission.id) end
     end
   end
 end

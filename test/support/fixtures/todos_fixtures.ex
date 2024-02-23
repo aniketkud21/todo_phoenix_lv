@@ -14,6 +14,18 @@ defmodule TodoLv.TodosFixtures do
     user = user_fixture()
     category = category_fixture()
 
+    # {:ok, _todo} =
+    #   attrs
+    #   |> Enum.into(%{
+    #     desc: "some desc",
+    #     like: false,
+    #     status: "some status",
+    #     title: "disliked title",
+    #     user_id: user.id,
+    #     category_id: category.id
+    #   })
+    #   |> TodoLv.Todos.create_todo()
+
     {:ok, todo} =
       attrs
       |> Enum.into(%{

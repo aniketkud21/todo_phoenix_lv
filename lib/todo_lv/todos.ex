@@ -70,7 +70,6 @@ defmodule TodoLv.Todos do
 
   """
   def create_todo(attrs \\ %{}) do
-    IO.inspect(attrs, label: "Attributes in create")
     %Todo{}
     |> Todo.changeset(attrs)
     |> Repo.insert()
@@ -89,8 +88,6 @@ defmodule TodoLv.Todos do
 
   """
   def update_todo(%Todo{} = todo, attrs) do
-    IO.inspect(todo, label: "todo In updatetodo")
-    IO.inspect(attrs, label: "attrs in updatetodo")
     todo
     |> Todo.changeset(attrs)
     |> Repo.update()
@@ -123,7 +120,6 @@ defmodule TodoLv.Todos do
 
   """
   def change_todo(%Todo{} = todo, attrs \\ %{}) do
-    IO.inspect(attrs, label: "Attributes")
     Todo.changeset(todo, attrs)
   end
 

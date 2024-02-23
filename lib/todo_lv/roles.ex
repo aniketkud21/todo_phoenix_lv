@@ -68,7 +68,6 @@ defmodule TodoLv.Roles do
 
   """
   def create_role(attrs \\ %{}) do
-    IO.inspect(attrs, label: "Attributes in create")
     %Role{}
     |> Role.changeset(attrs)
     |> Repo.insert()

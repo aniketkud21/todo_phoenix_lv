@@ -89,42 +89,13 @@ defmodule TodoLv.Permissions do
           - The associated %User{} struct (if applicable)
 
   """
-  def get_permission_by_todo_id!(todo_id) do
+  def get_permissions_by_todo_id!(todo_id) do
     permissions = from p in Permission,
       where: p.todo_id == ^todo_id,
       select: p
 
     Repo.all(permissions) |> Repo.preload(:role) |> Repo.preload(:user)
   end
-
-  # def create_or_update_permission(user_id, todo_id, role_id) do
-  #   case Repo.get_by(Permission, user_id: user_id, todo_id: todo_id) do
-  #     nil ->
-  #       create_permission(user_id, todo_id, role_id)
-
-  #     permission ->
-  #       update_permission(permission, role_id)
-  #   end
-  #   list_permissions_for_todo(todo_id)
-  # end
-
-  # def create_permission(user_id, todo_id, role_id) do
-  #   changeset = Permission.changeset(%Permission{}, %{user_id: user_id, todo_id: todo_id, role_id: role_id})
-  #   IO.inspect("Permission created")
-  #   case Repo.insert(changeset) do
-  #     {:ok, permission} -> {:ok, permission}
-  #     {:error, changeset} -> {:error, changeset}
-  #   end
-  # end
-
-  # def update_permission(permission, role_id) do
-  #   changeset = Permission.changeset(permission, %{role_id: role_id})
-  #   IO.inspect("Permission updated")
-  #   case Repo.update(changeset) do
-  #     {:ok, updated_permission} -> {:ok, updated_permission}
-  #     {:error, changeset} -> {:error, changeset}
-  #   end
-  # end
 
   @doc """
   Creates a permission.
@@ -146,14 +117,14 @@ defmodule TodoLv.Permissions do
   end
 
   @doc """
-  Updates a todo.
+  Updates a permission.
 
   ## Examples
 
-      iex> update_todo(todo, %{field: new_value})
-      {:ok, %Todo{}}
+      iex> update_permission(permission, %{field: new_value})
+      {:ok, %Permission{}}
 
-      iex> update_todo(todo, %{field: bad_value})
+      iex> update_permission(permission, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """

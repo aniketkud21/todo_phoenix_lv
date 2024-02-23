@@ -60,8 +60,6 @@ defmodule TodoLvWeb.TodoLive.Show do
 
   @impl true
   def handle_info({TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}}, socket) do
-    IO.inspect("in hadnle event of subtask")
-
     todo = Todos.get_todo!(todo_id)
     subtasks = todo.subtasks
     list = helper(subtasks)
@@ -74,7 +72,6 @@ defmodule TodoLvWeb.TodoLive.Show do
   end
 
   def handle_info({:new_subtask, subtask}, socket) do
-    IO.inspect("yesss")
     {:noreply,
     socket
     |> stream_insert(:subtasks, subtask)}

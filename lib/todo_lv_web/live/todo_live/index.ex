@@ -16,11 +16,10 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     {:ok,
       socket
-      |> assign(searchForm: to_form(%{default_value: ""}))
+      |> assign(:searchForm, to_form(%{default_value: ""}))
       |> assign(:page_number, 1)
       |> assign(:toggle_bookmark, false)
-      |> assign(:category, categories)
-      |> assign(:options, helper([]))} # maybe this is neended for :new apply action instead of here
+      |> assign(:category, categories)}
   end
 
   @impl true
@@ -32,14 +31,15 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    IO.inspect(id, label: "Id in edit")
-    IO.inspect(socket, label: "Socket in edit")
+    # IO.inspect(id, label: "Id in edit")
+    # IO.inspect(socket, label: "Socket in edit")
 
     todo = Todos.get_todo!(id)
     subtasks = todo.subtasks
 
     options = helper(subtasks)
     IO.inspect(options, label: "Options")
+    IO.inspect("might")
     cond do
       check_permission(socket.assigns.current_user.id, todo.id) == true ->
         IO.inspect(todo, label: "fight")
@@ -50,7 +50,7 @@ defmodule TodoLvWeb.TodoLive.Index do
         |> assign(:creator_id, todo.user_id)
 
       check_permission(socket.assigns.current_user.id, todo.id) == false ->
-
+        IO.inspect("flight")
         socket
         |> put_flash(:error, "View only: You cannot edit this todo.")
         |> redirect(to: "/todos")
@@ -64,18 +64,23 @@ defmodule TodoLvWeb.TodoLive.Index do
   defp apply_action(socket, :share, %{"id" => id}) do
     IO.inspect("in share")
     IO.inspect(id)
+    IO.inspect(socket.assigns.current_user.id)
+
+    # Inside the form Creator role shouldnt be available
     roles = Roles.list_roles()
     |> Enum.filter(fn role -> role.role_name != "Creator" end)
     |> Enum.map(fn role -> role.role_name end)
 
     cond do
       check_permission(socket.assigns.current_user.id, id) == true ->
+
         socket
         |> assign(:page_title, "Share Todo")
         |> assign(:todo, Todos.get_todo!(id))
         |> assign(:roles, roles)
 
       check_permission(socket.assigns.current_user.id, id) == false ->
+
         socket
         |> put_flash(:error, "Access denied: You cannot adjust the sharing settings for this todo.")
         |> redirect(to: "/todos")
@@ -88,6 +93,7 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> assign(:page_title, "New Todo")
     |> assign(:todo, %Todo{})
     |> assign(:creator_id, socket.assigns.current_user.id)
+    |> assign(:options, helper([]))
   end
 
   defp apply_action(socket, :index, _params) do
@@ -102,10 +108,10 @@ defmodule TodoLvWeb.TodoLive.Index do
     |> stream_insert(:todos, todo)}
   end
 
-  def handle_info({TodoLvWeb.TodoLive.FormComponent, {:msg, msg}}, socket) do
-    IO.inspect(msg)
-    {:noreply, socket}
-  end
+  # def handle_info({TodoLvWeb.TodoLive.FormComponent, {:msg, msg}}, socket) do
+  #   IO.inspect(msg)
+  #   {:noreply, socket}
+  # end
 
   #----------------- Buttons --------------
 
@@ -169,12 +175,12 @@ defmodule TodoLvWeb.TodoLive.Index do
   #---------------- Search ---------------------------
 
   @impl true
-  def handle_event("search_todo", %{"_target" => ["default_value"], "default_value" => ""}, socket) do
+  def handle_event("search_todo", %{"default_value" => ""}, socket) do
     {:noreply, handle_pagination(socket, socket.assigns.page_number)}
   end
-
+  # %{"_target" => ["default_value"], "default_value" => search_query}
   @impl true
-  def handle_event("search_todo", %{"_target" => ["default_value"], "default_value" => search_query}, socket) do
+  def handle_event("search_todo", %{"default_value" => search_query}, socket) do
     todos = Todos.search_todo(search_query)
     IO.inspect(todos, label: "Search todos")
     filtered_todos = Enum.filter(todos, fn todo ->
@@ -185,7 +191,24 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   # ------------- Filtering --------------------------------
   @impl true
-  def handle_event("filter_todos_by_category", %{"_target" => ["category"], "category" => category} , socket) do
+  def handle_event("filter_todos", %{"status" => status, "category" => category}, socket) do
+    # %{"_target" => ["status"], "status" => status}
+
+    if(status == "all") do
+      filteredTodos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
+        todo.category.name == category
+      end)
+      {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
+    else
+      filteredTodos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
+        (todo.status == status) && (todo.category.name == category)
+      end)
+      {:noreply, stream(socket, :todos, filteredTodos, reset: true)}
+    end
+  end
+
+  @impl true
+  def handle_event("filter_todos", %{"category" => category} , socket) do
     # {:noreply, socket}
     filteredTodos = Enum.filter(socket.assigns.current_user.todos, fn todo ->
       todo.category.name == category
@@ -194,9 +217,10 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   @impl true
-  def handle_event("filter_todos_by_status", %{"_target" => ["status"], "status" => status}, socket) do
+  def handle_event("filter_todos", %{"status" => status}, socket) do
     # %{"_target" => ["status"], "status" => status}
     #IO.inspect(params)
+    IO.inspect(status, label: "status")
 
     if(status == "all") do
       {:noreply, handle_pagination(socket, socket.assigns.page_number)}
@@ -209,11 +233,14 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   #------------- Private Helper functions ---------------
-
+  # Returns true -> Edit access
+  # false -> Only View access // no permission
   defp check_permission(user_id, todo_id) do
     permission = Permissions.get_user_todo_permission(user_id, todo_id)
+    IO.inspect(permission, label: "current permission")
     cond do
-      permission.role_id==3 || permission.role_id==1 -> true
+      permission == nil -> false
+      permission.role_id== Roles.get_role_by_name!("Creator").id || permission.role_id==Roles.get_role_by_name!("Editor").id -> true
       true -> false
     end
   end
@@ -226,6 +253,7 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     max_page_no = div(length(socket.assigns.current_user.todos),4)
 
+    # the no of todos are such that they fit inside the page
     if(rem(length(socket.assigns.current_user.todos),4) == 0) do
 
       socket
@@ -233,7 +261,7 @@ defmodule TodoLvWeb.TodoLive.Index do
       |> stream(:todos, paginated_todos)
 
     else
-
+    # the no of todos are such that they dont fit inside the page, therefore an additional page is required
       socket
       |> assign(:max_page_number, max_page_no + 1)
       |> stream(:todos, paginated_todos, reset: true)
@@ -249,9 +277,9 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     # Returns a list of options for todo based upon status of subtask
     cond do
-      length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"]
-      "In-Progress" in status_list -> ["In-Progress"]
-      Enum.all?(status_list, fn status -> status=="Hold" end) -> ["Hold"]
+      length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"] # If no subtask -> Todo can have any status
+      "In-Progress" in status_list -> ["In-Progress"] # If any In-progress -> In progress
+      Enum.all?(status_list, fn status -> status=="Hold" end) -> ["Hold"] # If all hold -> hold
       Enum.all?(status_list, fn status -> status=="Complete" end) -> ["Complete"]
       true -> ["Hold"]
     end
