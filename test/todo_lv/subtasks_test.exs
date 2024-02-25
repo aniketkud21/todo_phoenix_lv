@@ -23,7 +23,12 @@ defmodule TodoLv.SubtasksTest do
       todo = todo_fixture()
       # subtask = subtask_fixture()
 
-      valid_attrs = %{status: "some status", title: "some title", desc: "some desc", todo_id: todo.id}
+      valid_attrs = %{
+        status: "some status",
+        title: "some title",
+        desc: "some desc",
+        todo_id: todo.id
+      }
 
       assert {:ok, %Subtask{} = subtask} = Subtasks.create_subtask(valid_attrs)
       assert subtask.status == "some status"
@@ -38,7 +43,12 @@ defmodule TodoLv.SubtasksTest do
 
     test "update_subtask/2 with valid data updates the subtask" do
       subtask = subtask_fixture()
-      update_attrs = %{status: "some updated status", title: "some updated title", desc: "some updated desc"}
+
+      update_attrs = %{
+        status: "some updated status",
+        title: "some updated title",
+        desc: "some updated desc"
+      }
 
       assert {:ok, %Subtask{} = subtask} = Subtasks.update_subtask(subtask, update_attrs)
       assert subtask.status == "some updated status"

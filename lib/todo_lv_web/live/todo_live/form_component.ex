@@ -8,12 +8,12 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   @impl true
   def render(assigns) do
     IO.inspect(assigns, label: "in render")
+
     ~H"""
     <div>
       <.header>
         <%= @title %>
         <:subtitle>Use this form to manage todo records in your database.</:subtitle>
-
       </.header>
 
       <.simple_form
@@ -23,11 +23,23 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
         phx-submit="save"
         phx-hook="ChannelJoin"
       >
-        <.input field={@form[:title]} type="text" id="title-input" label="Title" phx-debounce="500"/>
-        <.input field={@form[:desc]} type="text" id="desc-input" label="Desc" phx-debounce="500"/>
-        <.input field={@form[:status]} type="select" id="status-input" options={@options} label="Status"/>
-        <.input field={@form[:category_id]} type="select" id="category-input" options={@categories} label="Category"/>
-        <.input field={@form[:like]} type="checkbox" id="like-input" label="Like"/>
+        <.input field={@form[:title]} type="text" id="title-input" label="Title" phx-debounce="500" />
+        <.input field={@form[:desc]} type="text" id="desc-input" label="Desc" phx-debounce="500" />
+        <.input
+          field={@form[:status]}
+          type="select"
+          id="status-input"
+          options={@options}
+          label="Status"
+        />
+        <.input
+          field={@form[:category_id]}
+          type="select"
+          id="category-input"
+          options={@categories}
+          label="Category"
+        />
+        <.input field={@form[:like]} type="checkbox" id="like-input" label="Like" />
 
         <:actions>
           <.button phx-disable-with="Saving...">Save Todo</.button>
@@ -39,7 +51,6 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
 
   @impl true
   def mount(socket) do
-    IO.inspect(socket, label: "Inside component")
     {:ok, socket}
   end
 
@@ -49,15 +60,16 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     IO.inspect(socket)
 
     changeset = Todos.change_todo(todo)
+
     {:ok,
-    socket
-    |> assign(assigns)
-    |> assign_form(changeset)}
+     socket
+     |> assign(assigns)
+     |> assign_form(changeset)}
 
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
     # IO.inspect(todo)
-    #IO.inspect(assigns, label: "Assigns in new todo")
+    # IO.inspect(assigns, label: "Assigns in new todo")
   end
 
   # @impl true
@@ -86,13 +98,16 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
     #   save_todo(socket, socket.assigns.action, todo_new_params)
     # end
 
-    todo_edit_params = todo_params
-    |> Map.put_new("user_id" , socket.assigns.creator_id)
+    todo_edit_params =
+      todo_params
+      |> Map.put_new("user_id", socket.assigns.creator_id)
+
     save_todo(socket, socket.assigns.action, todo_edit_params)
   end
 
   defp save_todo(socket, :edit, todo_params) do
     IO.inspect("ssp")
+
     case Todos.update_todo(socket.assigns.todo, todo_params) do
       {:ok, todo} ->
         notify_parent({:saved, todo})
@@ -110,14 +125,15 @@ defmodule TodoLvWeb.TodoLive.FormComponent do
   defp save_todo(socket, :new, todo_params) do
     case Todos.create_todo(todo_params) do
       {:ok, todo} ->
-        permission_struct = %{"todo_id" => todo.id,
-                              "user_id" => socket.assigns.current_user.id,
-                              "role_id" => Roles.get_role_by_name!("Creator").id}
-
-        Permissions.create_permission(permission_struct)
+        Permissions.create_permission(%{
+          "todo_id" => todo.id,
+          "user_id" => socket.assigns.current_user.id,
+          "role_id" => Roles.get_role_by_name!("Creator").id
+        })
 
         notify_parent({:saved, todo})
         IO.inspect(socket)
+
         {:noreply,
          socket
          |> put_flash(:info, "Todo created successfully")

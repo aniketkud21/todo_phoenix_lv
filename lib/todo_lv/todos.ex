@@ -55,7 +55,12 @@ defmodule TodoLv.Todos do
       ** (Ecto.NoResultsError)
 
   """
-  def get_todo!(id), do: Repo.get!(Todo, id) |> Repo.preload(:user) |> Repo.preload(:category) |> Repo.preload(:subtasks)
+  def get_todo!(id),
+    do:
+      Repo.get!(Todo, id)
+      |> Repo.preload(:user)
+      |> Repo.preload(:category)
+      |> Repo.preload(:subtasks)
 
   @doc """
   Creates a todo.
@@ -140,10 +145,11 @@ defmodule TodoLv.Todos do
   def search_todo(search_query) do
     search_query = "%#{search_query}%"
     IO.inspect(search_query)
+
     Todo
     |> order_by(asc: :title)
     |> where([t], ilike(t.title, ^search_query))
-    #|> limit(5)
+    # |> limit(5)
     |> Repo.all()
     |> Repo.preload(:user)
     |> Repo.preload(:category)

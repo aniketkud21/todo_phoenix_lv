@@ -63,7 +63,9 @@ defmodule TodoLv.Permissions do
 
   """
   def get_user_todo_permission(user_id, todo_id) do
-    Repo.get_by(Permission, user_id: user_id, todo_id: todo_id) |> Repo.preload(:user) |> Repo.preload(:role)
+    Repo.get_by(Permission, user_id: user_id, todo_id: todo_id)
+    |> Repo.preload(:user)
+    |> Repo.preload(:role)
   end
 
   @doc """
@@ -90,9 +92,10 @@ defmodule TodoLv.Permissions do
 
   """
   def get_permissions_by_todo_id!(todo_id) do
-    permissions = from p in Permission,
-      where: p.todo_id == ^todo_id,
-      select: p
+    permissions =
+      from p in Permission,
+        where: p.todo_id == ^todo_id,
+        select: p
 
     Repo.all(permissions) |> Repo.preload(:role) |> Repo.preload(:user)
   end
@@ -111,6 +114,7 @@ defmodule TodoLv.Permissions do
   """
   def create_permission(attrs \\ %{}) do
     IO.inspect(attrs, label: "Attributes in create")
+
     %Permission{}
     |> Permission.changeset(attrs)
     |> Repo.insert()
@@ -131,6 +135,7 @@ defmodule TodoLv.Permissions do
   def update_permission(%Permission{} = permission, attrs) do
     IO.inspect(permission, label: "todo In updatetodo")
     IO.inspect(attrs, label: "attrs in updatetodo")
+
     permission
     |> Permission.changeset(attrs)
     |> Repo.update()
@@ -138,10 +143,6 @@ defmodule TodoLv.Permissions do
 
   @doc """
   Deletes a specified permission.
-
-  **Preconditions:**
-
-  - The provided `permission` argument must be a valid %Permission{} struct.
 
   **Returns:**
 

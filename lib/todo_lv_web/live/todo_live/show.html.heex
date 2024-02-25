@@ -1,18 +1,18 @@
 <.header>
   <%= @todo.title %>
-    <:actions>
-      <%= if( @edit == true) do%>
-        <.link patch={~p"/todos/#{@todo}/new"}>
-          <.button>New Subtask</.button>
-        </.link>
-        <.link patch={~p"/todos/#{@todo}/edit"}>
-          <.button>Edit Todo</.button>
-        </.link>
-        <.link patch={~p"/todos/#{@todo}/share"}>
-          <.button>Share Todo</.button>
-        </.link>
-      <% end %>
-    </:actions>
+  <:actions>
+    <%= if( @edit == true) do %>
+      <.link patch={~p"/todos/#{@todo}/new"}>
+        <.button>New Subtask</.button>
+      </.link>
+      <.link patch={~p"/todos/#{@todo}/edit"}>
+        <.button>Edit Todo</.button>
+      </.link>
+      <.link patch={~p"/todos/#{@todo}/share"}>
+        <.button>Share Todo</.button>
+      </.link>
+    <% end %>
+  </:actions>
 </.header>
 
 <div>
@@ -24,38 +24,37 @@
   </.list>
 </div>
 
-<br>
-<br>
+<br />
+<br />
 
 <.header>Subtasks</.header>
 
-<.table
-    id="subtasks"
-    rows={@streams.subtasks}
-  >
-    <:col :let={{_id, subtask}} label="Title"><%= subtask.title %></:col>
-    <:col :let={{_id, subtask}} label="Desc"><%= subtask.desc %></:col>
-    <:col :let={{_id, subtask}} label="Status"><%= subtask.status %></:col>
-    <:action :let={{_id, subtask}}>
-      <%= if( @edit == true) do%>
-        <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
-      <% end %>
-    </:action>
-    <:action :let={{_id, subtask}}>
-      <%= if( @edit == true) do%>
-        <.link
-          phx-click={JS.push("delete", value: %{id: subtask.id})}
-          data-confirm="Are you sure?"
-        >
-          Delete
-        </.link>
-      <% end %>
-    </:action>
+<.table id="subtasks" rows={@streams.subtasks}>
+  <:col :let={{_id, subtask}} label="Title"><%= subtask.title %></:col>
+  <:col :let={{_id, subtask}} label="Desc"><%= subtask.desc %></:col>
+  <:col :let={{_id, subtask}} label="Status"><%= subtask.status %></:col>
+  <:action :let={{_id, subtask}}>
+    <%= if( @edit == true) do %>
+      <.link patch={~p"/todos/#{@todo}/#{subtask}/edit"}>Edit</.link>
+    <% end %>
+  </:action>
+  <:action :let={{_id, subtask}}>
+    <%= if( @edit == true) do %>
+      <.link phx-click={JS.push("delete", value: %{id: subtask.id})} data-confirm="Are you sure?">
+        Delete
+      </.link>
+    <% end %>
+  </:action>
 </.table>
 
 <.back navigate={~p"/todos"}>Back to todos</.back>
 
-<.modal :if={@live_action in [:new, :edit]} id="subtask-modal" show on_cancel={JS.patch(~p"/todos/#{@todo}")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="subtask-modal"
+  show
+  on_cancel={JS.patch(~p"/todos/#{@todo}")}
+>
   <.live_component
     module={TodoLvWeb.TodoLive.SubtaskFormComponent}
     id={@todo.id || :new}

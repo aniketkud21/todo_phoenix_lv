@@ -28,6 +28,4 @@ defmodule TodoLv.PermissionsFixtures do
     TodoLv.Permissions.get_permission!(permission.id)
     # permission
   end
-
-
 end

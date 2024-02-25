@@ -26,7 +26,14 @@ defmodule TodoLv.TodosTest do
       user = user_fixture()
       category = category_fixture()
 
-      valid_attrs = %{status: "some status", title: "some title", desc: "some desc", like: true, user_id: user.id, category_id: category.id}
+      valid_attrs = %{
+        status: "some status",
+        title: "some title",
+        desc: "some desc",
+        like: true,
+        user_id: user.id,
+        category_id: category.id
+      }
 
       assert {:ok, %Todo{} = todo} = Todos.create_todo(valid_attrs)
       assert todo.status == "some status"
@@ -43,7 +50,13 @@ defmodule TodoLv.TodosTest do
 
     test "update_todo/2 with valid data updates the todo" do
       todo = todo_fixture()
-      update_attrs = %{status: "some updated status", title: "some updated title", desc: "some updated desc", like: false}
+
+      update_attrs = %{
+        status: "some updated status",
+        title: "some updated title",
+        desc: "some updated desc",
+        like: false
+      }
 
       assert {:ok, %Todo{} = todo} = Todos.update_todo(todo, update_attrs)
       assert todo.status == "some updated status"

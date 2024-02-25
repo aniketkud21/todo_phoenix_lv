@@ -13,7 +13,9 @@ defmodule TodoLv.PermissionsTest do
 
     test "get_user_todo_permission/2 returns the permission with given user and todo id" do
       permission = permission_fixture()
-      assert Permissions.get_user_todo_permission(permission.user_id, permission.todo_id) == permission
+
+      assert Permissions.get_user_todo_permission(permission.user_id, permission.todo_id) ==
+               permission
     end
 
     # # assert to be written

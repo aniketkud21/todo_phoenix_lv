@@ -3,7 +3,6 @@ defmodule TodoLv.RolesTest do
   use TodoLv.DataCase
 
   describe "roles" do
-
     import TodoLv.RolesFixtures
 
     test "list_roles/0 returns all roles" do

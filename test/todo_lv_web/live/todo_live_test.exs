@@ -8,7 +8,12 @@ defmodule TodoLvWeb.TodoLiveTest do
   import TodoLv.CategoriesFixtures
 
   @create_attrs %{status: "Hold", title: "some title", desc: "some desc", like: true}
-  @update_attrs %{status: "Hold", title: "some updated title", desc: "some updated desc", like: false}
+  @update_attrs %{
+    status: "Hold",
+    title: "some updated title",
+    desc: "some updated desc",
+    like: false
+  }
   @invalid_attrs %{status: nil, title: nil, desc: nil, like: false}
 
   defp create_todo(_) do
@@ -59,7 +64,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           desc: "some desc",
           status: "Hold",
           title: "some title",
-          todo_id: todo.id,
+          todo_id: todo.id
         })
         |> TodoLv.Subtasks.create_subtask()
 
@@ -76,6 +81,7 @@ defmodule TodoLvWeb.TodoLiveTest do
       # user = user_fixture()
       {:ok, %{conn: conn, todo: todo, role: role, subtask: subtask}}
     end
+
     # [:create_todo]
 
     test "lists all todos", %{conn: conn, todo: todo} do
@@ -120,7 +126,6 @@ defmodule TodoLvWeb.TodoLiveTest do
     end
 
     # todo # Not working because used href instead of patch
-
 
     test "updates todo in listing", %{conn: conn, todo: todo} do
       {:ok, index_live, _html} = live(conn, ~p"/todos")
@@ -177,14 +182,12 @@ defmodule TodoLvWeb.TodoLiveTest do
              |> form("#share-form", %{email: "testmail@gmail.com", role: "Editor"})
              |> render_submit()
 
-
       html = render(index_live)
       assert html =~ "testmail@gmail.com"
       assert html =~ "Todo shared successfully"
     end
 
     test "deletes a permission", %{conn: conn, todo: todo} do
-
       {:ok, user} =
         %{}
         |> Enum.into(%{
@@ -277,6 +280,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           category_id: todo.category_id
         })
         |> TodoLv.Todos.create_todo()
+
       {:ok, _todo} =
         %{}
         |> Enum.into(%{
@@ -288,6 +292,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           category_id: todo.category_id
         })
         |> TodoLv.Todos.create_todo()
+
       {:ok, _todo} =
         %{}
         |> Enum.into(%{
@@ -299,6 +304,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           category_id: todo.category_id
         })
         |> TodoLv.Todos.create_todo()
+
       {:ok, _todo} =
         %{}
         |> Enum.into(%{
@@ -314,6 +320,7 @@ defmodule TodoLvWeb.TodoLiveTest do
       {:ok, index_live, _html} = live(conn, ~p"/todos")
 
       html = render(index_live)
+
       # IO.inspect(html, limit: :infinity, printable_limit: :infinity, width: 200, label: "HTML:", esc: :unicode)
       refute index_live |> has_element?("button", "prev")
       assert index_live |> has_element?("button", "next")
@@ -356,6 +363,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           category_id: todo.category_id
         })
         |> TodoLv.Todos.create_todo()
+
       {:ok, _todo} =
         %{}
         |> Enum.into(%{
@@ -367,6 +375,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           category_id: todo.category_id
         })
         |> TodoLv.Todos.create_todo()
+
       {:ok, index_live, _html} = live(conn, ~p"/todos")
 
       assert index_live |> has_element?("#status-filter-form")
@@ -406,7 +415,6 @@ defmodule TodoLvWeb.TodoLiveTest do
       refute html =~ "Complete title"
       refute html =~ "In progress title"
       refute html =~ "disliked title"
-
     end
   end
 
@@ -443,7 +451,7 @@ defmodule TodoLvWeb.TodoLiveTest do
           desc: "some desc",
           status: "Hold",
           title: "some subtask title",
-          todo_id: todo.id,
+          todo_id: todo.id
         })
         |> TodoLv.Subtasks.create_subtask()
 
@@ -484,7 +492,11 @@ defmodule TodoLvWeb.TodoLiveTest do
       #        |> render_change() =~ "can&#39;t be blank"
 
       assert index_live
-             |> form("#subtask-form", %{"subtask[status]": "Complete", "subtask[title]": "my title", "subtask[desc]": "some desc"})
+             |> form("#subtask-form", %{
+               "subtask[status]": "Complete",
+               "subtask[title]": "my title",
+               "subtask[desc]": "some desc"
+             })
              |> render_submit()
 
       {:ok, index_live, _html} = live(conn, ~p"/todos/#{todo}")
@@ -507,7 +519,9 @@ defmodule TodoLvWeb.TodoLiveTest do
       {:ok, index_live, _html} = live(conn, ~p"/todos/#{todo.id}")
 
       assert index_live |> has_element?("#subtasks-#{subtask.id} a", "Edit")
-      assert index_live |> element("#subtasks-#{subtask.id} a", "Edit") |> render_click() =~ "Edit SubTask"
+
+      assert index_live |> element("#subtasks-#{subtask.id} a", "Edit") |> render_click() =~
+               "Edit SubTask"
 
       assert_patch(index_live, ~p"/todos/#{todo.id}/#{subtask.id}/edit")
 
@@ -534,6 +548,7 @@ defmodule TodoLvWeb.TodoLiveTest do
       {:ok, index_live, _html} = live(conn, ~p"/todos/#{todo.id}")
 
       assert index_live |> has_element?("a", "Share Todo")
+
       assert index_live |> element("a", "Share Todo") |> render_click() =~
                "Share Todo"
 

@@ -4,7 +4,6 @@ defmodule TodoLvWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias TodoLv.Roles.Role
   alias TodoLv.Permissions
   alias TodoLv.Roles
   alias TodoLv.Accounts
@@ -128,6 +127,9 @@ defmodule TodoLvWeb.UserAuth do
     * `:redirect_if_user_is_authenticated` - Authenticates the user from the session.
       Redirects to signed_in_path if there's a logged user.
 
+    * `:check_permission_level` - Authenticates the user from the session.
+      Renders the page according to the level of access of the user.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -175,36 +177,37 @@ defmodule TodoLvWeb.UserAuth do
     end
   end
 
-  # ----- Personal Auth functions -----------------
-
   def on_mount(:check_permission_level, params, session, socket) do
     socket = mount_current_user(socket, session)
-      # Raises No Ecto Results, if no entry
-      # IO.inspect(socket.assigns.current_user.id)
-      # IO.inspect(params["id"])
-      # IO.inspect("checking auth")
-      permission = Permissions.get_user_todo_permission(socket.assigns.current_user.id, params["id"])
-      # IO.inspect(permission, label: "Checking permission")
-      # IO.inspect(Roles.get_role_by_name!("Creator"), label: "Role checking")
-      cond do
-        permission == nil ->
-          {:halt, socket
-          |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
-          |> Phoenix.LiveView.redirect(to: ~p"/todos")}
-        permission.role_id==Roles.get_role_by_name!("Viewer").id
-          -> {:cont, socket
-              |> Phoenix.Component.assign(:view, true)
-              |> Phoenix.Component.assign(:edit, false)}
-             # |> assign(:view, true)
-             #|> assign(:edit, false)}
-        permission.role_id==Roles.get_role_by_name!("Creator").id || permission.role_id==Roles.get_role_by_name!("Editor").id
-          -> {:cont, socket
-              |> Phoenix.Component.assign(:view, true)
-              |> Phoenix.Component.assign(:edit, true)}
-            #  |> assign(:view, true)
-            #  |> assign(:edit, true)}
+    # Raises No Ecto Results, if no entry
+    # IO.inspect(socket.assigns.current_user.id)
+    # IO.inspect(params["id"])
+    # IO.inspect("checking auth")
+    permission =
+      Permissions.get_user_todo_permission(socket.assigns.current_user.id, params["id"])
 
-      end
+    # IO.inspect(permission, label: "Checking permission")
+    # IO.inspect(Roles.get_role_by_name!("Creator"), label: "Role checking")
+    cond do
+      permission == nil ->
+        {:halt,
+         socket
+         |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+         |> Phoenix.LiveView.redirect(to: ~p"/todos")}
+
+      permission.role_id == Roles.get_role_by_name!("Viewer").id ->
+        {:cont,
+         socket
+         |> Phoenix.Component.assign(:view, true)
+         |> Phoenix.Component.assign(:edit, false)}
+
+      permission.role_id == Roles.get_role_by_name!("Creator").id ||
+          permission.role_id == Roles.get_role_by_name!("Editor").id ->
+        {:cont,
+         socket
+         |> Phoenix.Component.assign(:view, true)
+         |> Phoenix.Component.assign(:edit, true)}
+    end
   end
 
   defp mount_current_user(socket, session) do

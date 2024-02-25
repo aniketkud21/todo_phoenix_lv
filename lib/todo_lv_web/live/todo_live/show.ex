@@ -1,5 +1,7 @@
 defmodule TodoLvWeb.TodoLive.Show do
   alias TodoLv.Subtasks
+  alias TodoLv.Permissions
+  alias TodoLv.Roles
   alias TodoLv.Subtasks.Subtask
   use TodoLvWeb, :live_view
 
@@ -11,11 +13,11 @@ defmodule TodoLvWeb.TodoLive.Show do
   def mount(params, _session, socket) do
     IO.inspect(params["id"])
 
-    Phoenix.PubSub.subscribe(TodoLv.PubSub, "subtasks")
+    Phoenix.PubSub.subscribe(TodoLv.PubSub, "subtask:#{params["id"]}")
+    Phoenix.PubSub.subscribe(TodoLv.PubSub, "share:#{params["id"]}")
     # user = Accounts.get_user_by_session_token(session["user_token"])
     # %{view: view, edit: edit} = check_permission(socket.assigns.current_user.id, params["id"])
-    {:ok,
-    socket}
+    {:ok, socket}
     # |> assign(:view, view)
     # |> assign(:edit, edit)}
   end
@@ -53,13 +55,18 @@ defmodule TodoLvWeb.TodoLive.Show do
 
   defp apply_action(socket, :edit, params) do
     %{"subtask_id" => subtask_id} = params
+
     socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:subtask, Subtasks.get_subtask!(subtask_id))
   end
 
+  # handles the updation of status of todo based on status of subtasks
   @impl true
-  def handle_info({TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}}, socket) do
+  def handle_info(
+        {TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}},
+        socket
+      ) do
     todo = Todos.get_todo!(todo_id)
     subtasks = todo.subtasks
     list = helper(subtasks)
@@ -67,14 +74,33 @@ defmodule TodoLvWeb.TodoLive.Show do
     Todos.update_todo(todo, %{status: Enum.at(list, 0)})
 
     {:noreply,
-    socket
-    |> stream_insert(:subtasks, subtask)}
+     socket
+     |> stream_insert(:subtasks, subtask)}
   end
 
-  def handle_info({:new_subtask, subtask}, socket) do
+  # Handles Pubsub
+  def handle_info({:subtask, subtask}, socket) do
     {:noreply,
-    socket
-    |> stream_insert(:subtasks, subtask)}
+     socket
+     |> stream_insert(:subtasks, subtask)}
+  end
+
+  def handle_info({:delete_msg, msg}, socket) do
+    IO.inspect("deleted permission")
+
+    {:noreply,
+     socket
+     |> put_flash(:error, msg)
+     |> redirect(to: ~p"/todos")}
+  end
+
+  def handle_info({:update_msg, msg, :edit_access, edit_access}, socket) do
+    IO.inspect(msg)
+
+    {:noreply,
+     socket
+     |> assign(:edit, edit_access)
+     |> put_flash(:info, msg)}
   end
 
   @impl true
@@ -90,16 +116,18 @@ defmodule TodoLvWeb.TodoLive.Show do
   end
 
   defp helper(subtasks) do
-    status_list = Enum.map(subtasks, fn subtask ->
-      subtask.status
-    end)
+    status_list =
+      Enum.map(subtasks, fn subtask ->
+        subtask.status
+      end)
 
     IO.inspect(status_list, label: "oNLY STATUS")
+
     cond do
       length(subtasks) == 0 -> ["Hold", "In-Progress", "Complete"]
       "In-Progress" in status_list -> ["In-Progress"]
-      Enum.all?(status_list, fn status -> status=="Hold" end) -> ["Hold"]
-      Enum.all?(status_list, fn status -> status=="Complete" end) -> ["Complete"]
+      Enum.all?(status_list, fn status -> status == "Hold" end) -> ["Hold"]
+      Enum.all?(status_list, fn status -> status == "Complete" end) -> ["Complete"]
       true -> ["Hold"]
     end
   end

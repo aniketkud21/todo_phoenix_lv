@@ -17,9 +17,11 @@ defmodule TodoLv.SubtasksFixtures do
         desc: "some desc",
         status: "some status",
         title: "some title",
-        todo_id: todo.id,
+        todo_id: todo.id
       })
       |> TodoLv.Subtasks.create_subtask()
-    TodoLv.Subtasks.get_subtask!(subtask.id) # on create it is not preloaded
+
+    # on create it is not preloaded
+    TodoLv.Subtasks.get_subtask!(subtask.id)
   end
 end

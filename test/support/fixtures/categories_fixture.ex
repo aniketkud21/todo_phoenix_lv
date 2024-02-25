@@ -17,6 +17,4 @@ defmodule TodoLv.CategoriesFixtures do
 
     TodoLv.Categories.get_category!(category.id)
   end
-
-
 end

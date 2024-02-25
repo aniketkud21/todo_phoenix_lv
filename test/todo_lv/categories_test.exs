@@ -16,4 +16,3 @@ defmodule TodoLv.CategoriesTest do
     end
   end
 end
-

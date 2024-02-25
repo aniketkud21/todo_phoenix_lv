@@ -14,6 +14,7 @@ defmodule TodoLv.RolesFixtures do
         role_name: "some_role"
       })
       |> TodoLv.Roles.create_role()
+
     role
   end
 end

@@ -60,7 +60,8 @@ defmodule TodoLvWeb do
 
   def live_component do
     quote do
-      use Phoenix.LiveComponent
+      use Phoenix.LiveComponent,
+        layout: {TodoLvWeb.Layouts, :app}
 
       unquote(html_helpers())
     end

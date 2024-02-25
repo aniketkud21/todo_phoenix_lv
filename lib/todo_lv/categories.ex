@@ -9,23 +9,23 @@ defmodule TodoLv.Categories do
   alias TodoLv.Categories.Category
 
   @doc """
-  Retrieves a list of all categories from the database, preloaded with their associated todos.
+    Retrieves a list of all categories from the database, preloaded with their associated todos.
 
-  ## Return value
+    ## Return value
 
-  A list of %Category{} structs, each preloaded with a list of associated %Todo{} structs.
+    A list of %Category{} structs, each preloaded with a list of associated %Todo{} structs.
 
-  ## Note
+    ## Note
 
-  - The categories returned may be unordered.
-  - The number of preloaded todos per category may vary.
+    - The categories returned may be unordered.
+    - The number of preloaded todos per category may vary.
 
-  ## Examples
+    ## Examples
 
-  iex> TodoLv.Categories.list_categories()
-  # Returns a list of %Category{} structs, each with preloaded %Todo{} structs
+    iex> TodoLv.Categories.list_categories()
+    # Returns a list of %Category{} structs, each with preloaded %Todo{} structs
 
-"""
+  """
   def list_categories do
     Repo.all(Category) |> Repo.preload(:todos)
   end
@@ -71,6 +71,7 @@ defmodule TodoLv.Categories do
   """
   def create_category(attrs \\ %{}) do
     IO.inspect(attrs, label: "Attributes in create")
+
     %Category{}
     |> Category.changeset(attrs)
     |> Repo.insert()

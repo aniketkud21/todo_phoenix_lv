@@ -3,6 +3,7 @@ defmodule :"Elixir.TodoLv.Repo.Migrations.Adding on delete constraints on todo a
 
   def up do
     execute "ALTER TABLE subtasks DROP CONSTRAINT subtasks_todo_id_fkey"
+
     alter table(:subtasks) do
       modify(:todo_id, references(:todos, on_delete: :delete_all))
     end
@@ -10,6 +11,7 @@ defmodule :"Elixir.TodoLv.Repo.Migrations.Adding on delete constraints on todo a
 
   def down do
     execute "ALTER TABLE subtasks DROP CONSTRAINT subtasks_todo_id_fkey"
+
     alter table(:subtasks) do
       modify(:todo_id, references(:todos, on_delete: :nothing))
     end

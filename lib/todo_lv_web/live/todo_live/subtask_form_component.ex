@@ -19,9 +19,14 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@subTaskForm[:title]} type="text" label="Title" phx-debounce="500"/>
-        <.input field={@subTaskForm[:desc]} type="text" label="Desc" phx-debounce="500"/>
-        <.input field={@subTaskForm[:status]} type="select" options={["Hold", "In-Progress", "Complete"]} label="Status"/>
+        <.input field={@subTaskForm[:title]} type="text" label="Title" phx-debounce="500" />
+        <.input field={@subTaskForm[:desc]} type="text" label="Desc" phx-debounce="500" />
+        <.input
+          field={@subTaskForm[:status]}
+          type="select"
+          options={["Hold", "In-Progress", "Complete"]}
+          label="Status"
+        />
 
         <:actions>
           <.button phx-disable-with="Saving...">Save Subtask</.button>
@@ -47,9 +52,9 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
   @impl true
   def handle_event("validate", %{"subtask" => subtask_params}, socket) do
-
-    subtask_params = subtask_params
-    |> Map.put_new("todo_id" , socket.assigns.todo.id)
+    subtask_params =
+      subtask_params
+      |> Map.put_new("todo_id", socket.assigns.todo.id)
 
     changeset =
       socket.assigns.subtask
@@ -60,8 +65,9 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   end
 
   def handle_event("save", %{"subtask" => subtask_params}, socket) do
-    subtask_params = subtask_params
-    |> Map.put_new("todo_id" , socket.assigns.todo.id)
+    subtask_params =
+      subtask_params
+      |> Map.put_new("todo_id", socket.assigns.todo.id)
 
     IO.inspect(subtask_params, label: "Socket on save")
 
@@ -71,8 +77,17 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_subtask(socket, :edit, subtask_params) do
     case Subtasks.update_subtask(socket.assigns.subtask, subtask_params) do
       {:ok, subtask} ->
+        # notify the status of subtask to main todo
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
+        # broadcast the edited subtask
+        Phoenix.PubSub.broadcast(
+          TodoLv.PubSub,
+          "subtask:#{socket.assigns.todo.id}",
+          {:subtask, subtask}
+        )
+
         IO.inspect("saving with flash")
+
         {:noreply,
          socket
          |> put_flash(:info, "Subtask updated successfully")
@@ -87,9 +102,15 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_subtask(socket, :new, subtask_params) do
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
-        # notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
-        IO.inspect("creating new subtask")
-        Phoenix.PubSub.broadcast(TodoLv.PubSub, "subtasks", {:new_subtask, subtask})
+        # notify the status of subtask to main todo
+        notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
+        # broadcast the new subtask
+        Phoenix.PubSub.broadcast(
+          TodoLv.PubSub,
+          "subtask:#{socket.assigns.todo.id}",
+          {:subtask, subtask}
+        )
+
         {:noreply,
          socket
          |> put_flash(:info, "Subtask created successfully")

@@ -98,16 +98,17 @@ defmodule TodoLv.Subtasks do
   def delete_subtask(%Subtask{} = subtask) do
     Repo.delete(subtask)
   end
-    @doc """
-    Returns an `%Ecto.Changeset{}` for tracking subtask changes.
 
-    ## Examples
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking subtask changes.
 
-        iex> change_subtask(subtask)
-        %Ecto.Changeset{data: %Subtask{}}
+  ## Examples
 
-    """
-    def change_subtask(%Subtask{} = subtask, attrs \\ %{}) do
-      Subtask.changeset(subtask, attrs)
-    end
+      iex> change_subtask(subtask)
+      %Ecto.Changeset{data: %Subtask{}}
+
+  """
+  def change_subtask(%Subtask{} = subtask, attrs \\ %{}) do
+    Subtask.changeset(subtask, attrs)
+  end
 end
