@@ -1,4 +1,15 @@
 defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
+  @moduledoc """
+  Manages creating and editing subtasks within a todo.
+
+  Key Responsibilities:
+
+  Renders a form for subtask details (title, description, status).
+  Handles form submissions (save event) to create or update subtasks.
+  Validates form data and provides feedback to the user.
+  Interacts with the parent LiveView for updates and broadcasting changes.
+  """
+
   use TodoLvWeb, :live_component
 
   alias TodoLv.Subtasks
@@ -42,6 +53,11 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
     # todo
     # |> Map.put("user_id" , socket.assigns.current_user.id)
 
+    # Appsignal.Logger.info(
+    #   "update",
+    #   "Assigning changeset of #{subtask.id} for #{assigns.todo_id}"
+    # )
+
     changeset = Subtasks.change_subtask(subtask)
 
     {:ok,
@@ -49,6 +65,18 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
      |> assign(assigns)
      |> assign_form(changeset)}
   end
+
+  @doc """
+  handle_event:
+  validate: Validates form data and assigns a changeset for feedback.
+  save: Determines the action (create or update) and calls save_subtask.
+  save_subtask:
+  Handles both creating and updating subtasks.
+  Uses Subtasks.create_subtask or Subtasks.update_subtask.
+  Sends a message to the parent LiveView with the result.
+  Broadcasts updates to subscribed clients.
+  Provides feedback through flash messages and navigation.
+  """
 
   @impl true
   def handle_event("validate", %{"subtask" => subtask_params}, socket) do
@@ -65,6 +93,11 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   end
 
   def handle_event("save", %{"subtask" => subtask_params}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Saving subtask of #{socket.assigns.todo.id}"
+    )
+
     subtask_params =
       subtask_params
       |> Map.put_new("todo_id", socket.assigns.todo.id)
@@ -77,6 +110,10 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_subtask(socket, :edit, subtask_params) do
     case Subtasks.update_subtask(socket.assigns.subtask, subtask_params) do
       {:ok, subtask} ->
+        Appsignal.Logger.info(
+          "handle_event",
+          "Saving edited subtask #{subtask.id} of #{subtask.todo_id}"
+        )
         # notify the status of subtask to main todo
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
         # broadcast the edited subtask
@@ -95,6 +132,10 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect("IN ERRRORR")
+        Appsignal.Logger.error(
+          "handle_event",
+          "Failed to Save edited subtask of #{subtask_params.todo_id}"
+        )
         {:noreply, assign_form(socket, changeset)}
     end
   end
@@ -102,6 +143,10 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
   defp save_subtask(socket, :new, subtask_params) do
     case Subtasks.create_subtask(subtask_params) do
       {:ok, subtask} ->
+        Appsignal.Logger.info(
+          "handle_event",
+          "Saving new subtask #{subtask.id} of #{subtask.todo_id}"
+        )
         # notify the status of subtask to main todo
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
         # broadcast the new subtask
@@ -117,6 +162,10 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        Appsignal.Logger.error(
+          "handle_event",
+          "Failed to Save new subtask of #{subtask_params.todo_id}"
+        )
         {:noreply, assign_form(socket, changeset)}
     end
   end

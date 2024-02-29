@@ -37,6 +37,7 @@ defmodule TodoLv.Roles do
   """
   def get_role!(id), do: Repo.get!(Role, id)
 
+  @spec get_role_by_name!(any()) :: any()
   @doc """
   Gets a specific role by its name.
 

@@ -148,6 +148,20 @@ defmodule TodoLvWeb.UserAuth do
         live "/profile", ProfileLive, :index
       end
   """
+
+  # import Appsignal.Phoenix.LiveView, only: [live_view_action: 5]
+
+  # def on_mount(:default, params, session, socket) do
+  #   socket = attach_hook(socket, :mount_hook, :handle_event, fn
+  #     event, params, socket ->
+  #       live_view_action(socket.view, "mount", params, socket, fn ->
+  #         {:cont, mount_current_user(socket, session)}
+  #       end)
+  #   end)
+
+  #   {:cont, socket}
+  # end
+
   def on_mount(:mount_current_user, _params, session, socket) do
     {:cont, mount_current_user(socket, session)}
   end
@@ -176,6 +190,15 @@ defmodule TodoLvWeb.UserAuth do
       {:cont, socket}
     end
   end
+
+  # def on_mount(:default, params, session, socket) do
+  #   # here's where we're calling appsignal instrumentation
+  #   live_view_action(socket.view, "mount", params, socket, fn ->
+  #     socket = mount_current_user(socket, session)
+
+  #     {:cont, socket}
+  #   end)
+  # end
 
   def on_mount(:check_permission_level, params, session, socket) do
     socket = mount_current_user(socket, session)

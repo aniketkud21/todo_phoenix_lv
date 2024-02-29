@@ -1,4 +1,7 @@
 defmodule TodoLvWeb.TodoLive.Index do
+  @moduledoc """
+  Manages the listing, creation, editing, sharing, and filtering of todos within a real-time LiveView.
+  """
   alias TodoLv.Permissions
   alias TodoLv.Roles
   alias TodoLv.Categories
@@ -16,6 +19,11 @@ defmodule TodoLvWeb.TodoLive.Index do
     IO.inspect(socket)
     categories = Categories.list_categories_mapping()
 
+    Appsignal.Logger.info(
+      "index_mount",
+      "Mounting the liveviw by #{socket.assigns.current_user.id}"
+    )
+
     {:ok,
      socket
      |> assign(:searchForm, to_form(%{default_value: ""}))
@@ -23,6 +31,15 @@ defmodule TodoLvWeb.TodoLive.Index do
      |> assign(:toggle_bookmark, false)
      |> assign(:category, categories)}
   end
+
+  @doc """
+  Routes incoming requests to appropriate actions based on the live_action and params:
+
+  :index: Renders the todo listing page.
+  :new: Renders the form for creating a new todo.
+  :edit: Renders the form for editing an existing todo.
+  :share: Renders the form for sharing an existing todo with other users.
+  """
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -33,6 +50,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    Appsignal.Logger.info(
+      "edit_apply_action",
+      "Apply action the #{id} edit todo page by #{socket.assigns.current_user.id}"
+    )
+
     todo = Todos.get_todo!(id)
     subtasks = todo.subtasks
 
@@ -41,6 +63,11 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     cond do
       check_permission(socket.assigns.current_user.id, todo.id) == true ->
+        Appsignal.Logger.info(
+          "edit_apply_action",
+          "Permission to access #{id} edit todo page granted to #{socket.assigns.current_user.id}"
+        )
+
         socket
         |> assign(:page_title, "Edit Todo")
         |> assign(:todo, Todos.get_todo!(id))
@@ -48,6 +75,11 @@ defmodule TodoLvWeb.TodoLive.Index do
         |> assign(:creator_id, todo.user_id)
 
       check_permission(socket.assigns.current_user.id, todo.id) == false ->
+        Appsignal.Logger.warning(
+          "edit_apply_action",
+          "#{socket.assigns.current_user.id} tried to access #{id} edit todo page"
+        )
+
         socket
         |> put_flash(:error, "View only: You cannot edit this todo.")
         |> redirect(to: "/todos")
@@ -67,12 +99,22 @@ defmodule TodoLvWeb.TodoLive.Index do
 
     cond do
       check_permission(socket.assigns.current_user.id, id) == true ->
+        Appsignal.Logger.info(
+          "edit_apply_action",
+          "Permission to access #{id} share todo page granted to #{socket.assigns.current_user.id}"
+        )
+
         socket
         |> assign(:page_title, "Share Todo")
         |> assign(:todo, Todos.get_todo!(id))
         |> assign(:roles, roles)
 
       check_permission(socket.assigns.current_user.id, id) == false ->
+        Appsignal.Logger.warning(
+          "share_apply_action",
+          "#{socket.assigns.current_user.id} tried to access #{id} share todo page"
+        )
+
         socket
         |> put_flash(
           :error,
@@ -83,6 +125,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    Appsignal.Logger.info(
+      "new_apply_action",
+      "Apply action to new todo page by #{socket.assigns.current_user.id}"
+    )
+
     socket
     |> assign(:page_title, "New Todo")
     |> assign(:todo, %Todo{})
@@ -91,12 +138,22 @@ defmodule TodoLvWeb.TodoLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
+    Appsignal.Logger.info(
+      "new_apply_action",
+      "Apply action for index page by #{socket.assigns.current_user.id}"
+    )
+
     socket
     |> assign(:page_title, "Listing Todos")
   end
 
   @impl true
   def handle_info({TodoLvWeb.TodoLive.FormComponent, {:saved, todo}}, socket) do
+    Appsignal.Logger.info(
+      "handle_info",
+      "Handled the updation of #{todo.id} by #{socket.assigns.current_user.id}"
+    )
+
     {:noreply,
      socket
      |> stream_insert(:todos, todo)}
@@ -108,9 +165,23 @@ defmodule TodoLvWeb.TodoLive.Index do
   # end
 
   # ----------------- Buttons --------------
+  @doc """
+  Handles various user interactions within the LiveView:
 
+  delete_todo: Deletes a todo with the given id.
+  like_todo: Toggles the like status of a todo.
+  bookmark_todos: Toggles the display of bookmarked todos.
+  next_page and prev_page: Handle pagination navigation.
+  search_todo: Searches for todos based on the provided query string.
+  filter_todos: Filters todos based on status and category options.
+  """
   @impl true
   def handle_event("delete_todo", %{"id" => id}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Handled the deletion of todo #{id} by #{socket.assigns.current_user.id}"
+    )
+
     todo = Todos.get_todo!(id)
     {:ok, _} = Todos.delete_todo(todo)
 
@@ -119,6 +190,11 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("like_todo", %{"id" => id}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Handled the toggle like of todo #{id} by #{socket.assigns.current_user.id}"
+    )
+
     todo = Todos.get_todo!(id)
     {:ok, updated_todo} = Todos.update_todo(todo, %{like: !todo.like})
     {:noreply, stream_insert(socket, :todos, updated_todo)}
@@ -127,6 +203,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   @impl true
   def handle_event("bookmark_todos", _unsigned_paramz, socket) do
     if(socket.assigns.toggle_bookmark == false) do
+      Appsignal.Logger.info(
+        "handle_event",
+        "Status of toggle = #{socket.assigns.toggle_bookmark} by #{socket.assigns.current_user.id}"
+      )
+
       bookmarked_todos =
         Enum.filter(socket.assigns.current_user.todos, fn todo ->
           todo.like == true
@@ -137,6 +218,11 @@ defmodule TodoLvWeb.TodoLive.Index do
        |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
        |> stream(:todos, bookmarked_todos, reset: true)}
     else
+      Appsignal.Logger.info(
+        "handle_event",
+        "Status of toggle = #{socket.assigns.toggle_bookmark} by #{socket.assigns.current_user.id}"
+      )
+
       {:noreply,
        socket
        |> assign(:toggle_bookmark, !socket.assigns.toggle_bookmark)
@@ -151,6 +237,11 @@ defmodule TodoLvWeb.TodoLive.Index do
     current_page_number = socket.assigns.page_number + 1
     IO.inspect(socket.assigns.page_number)
 
+    Appsignal.Logger.info(
+      "handle_event",
+      "Pressed the next page #{current_page_number} by #{socket.assigns.current_user.id}"
+    )
+
     {:noreply,
      socket
      |> assign(:page_number, current_page_number)
@@ -162,6 +253,11 @@ defmodule TodoLvWeb.TodoLive.Index do
     current_page_number = socket.assigns.page_number - 1
     IO.inspect(socket.assigns.page_number)
 
+    Appsignal.Logger.info(
+      "handle_event",
+      "Pressed the next page #{current_page_number} by #{socket.assigns.current_user.id}"
+    )
+
     {:noreply,
      socket
      |> assign(:page_number, current_page_number)
@@ -172,12 +268,22 @@ defmodule TodoLvWeb.TodoLive.Index do
 
   @impl true
   def handle_event("search_todo", %{"default_value" => ""}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Search bar was made empty by #{socket.assigns.current_user.id}"
+    )
+
     {:noreply, handle_pagination(socket, socket.assigns.page_number)}
   end
 
   # %{"_target" => ["default_value"], "default_value" => search_query}
   @impl true
   def handle_event("search_todo", %{"default_value" => search_query}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Searching #{search_query} by #{socket.assigns.current_user.id}"
+    )
+
     todos = Todos.search_todo(search_query)
 
     filtered_todos =
@@ -192,6 +298,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   @impl true
   def handle_event("filter_todos", %{"status" => status, "category" => category}, socket) do
     # %{"_target" => ["status"], "status" => status}
+
+    Appsignal.Logger.info(
+      "handle_event",
+      "Filtering todos by #{status} and #{category} by #{socket.assigns.current_user.id}"
+    )
 
     if(status == "all") do
       filteredTodos =
@@ -213,6 +324,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   @impl true
   def handle_event("filter_todos", %{"category" => category}, socket) do
     # {:noreply, socket}
+    Appsignal.Logger.info(
+      "handle_event",
+      "Filtering todos by #{category} by #{socket.assigns.current_user.id}"
+    )
+
     filteredTodos =
       Enum.filter(socket.assigns.current_user.todos, fn todo ->
         todo.category.name == category
@@ -225,6 +341,11 @@ defmodule TodoLvWeb.TodoLive.Index do
   def handle_event("filter_todos", %{"status" => status}, socket) do
     # %{"_target" => ["status"], "status" => status}
     # IO.inspect(params)
+    Appsignal.Logger.info(
+      "handle_event",
+      "Filtering todos by #{status} by #{socket.assigns.current_user.id}"
+    )
+
     IO.inspect(status, label: "status")
 
     if(status == "all") do

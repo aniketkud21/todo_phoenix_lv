@@ -17,6 +17,14 @@ defmodule TodoLvWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Other scopes may use custom stacks.
+  scope "/api", TodoLvWeb do
+    pipe_through :api
+
+    # get "/" , TodoController, :show
+    resources "/todos", TodoController, except: [:new, :edit]
+  end
+
   scope "/", TodoLvWeb do
     pipe_through [:browser, :require_authenticated_user]
 

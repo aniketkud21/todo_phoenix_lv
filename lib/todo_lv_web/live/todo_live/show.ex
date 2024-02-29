@@ -1,7 +1,10 @@
 defmodule TodoLvWeb.TodoLive.Show do
+  @moduledoc """
+  This LiveView module handles displaying, creating, and editing subtasks
+  associated with a specific todo. It leverages Phoenix.PubSub for real-time
+  updates and implements permission checks based on user roles.
+  """
   alias TodoLv.Subtasks
-  alias TodoLv.Permissions
-  alias TodoLv.Roles
   alias TodoLv.Subtasks.Subtask
   use TodoLvWeb, :live_view
 
@@ -12,6 +15,11 @@ defmodule TodoLvWeb.TodoLive.Show do
   @impl true
   def mount(params, _session, socket) do
     IO.inspect(params["id"])
+
+    Appsignal.Logger.info(
+      "show_mount",
+      "Mounting the #{params["id"]} page by #{socket.assigns.current_user.id}"
+    )
 
     Phoenix.PubSub.subscribe(TodoLv.PubSub, "subtask:#{params["id"]}")
     Phoenix.PubSub.subscribe(TodoLv.PubSub, "share:#{params["id"]}")
@@ -37,6 +45,11 @@ defmodule TodoLvWeb.TodoLive.Show do
   # end
 
   defp apply_action(socket, :show, params) do
+    Appsignal.Logger.info(
+      "show_apply_action",
+      "Apply action the #{params["id"]} page by #{socket.assigns.current_user.id}"
+    )
+
     IO.inspect(params)
     %{"id" => id} = params
     subtasks = Todos.get_todo!(id).subtasks
@@ -47,13 +60,23 @@ defmodule TodoLvWeb.TodoLive.Show do
     |> stream(:subtasks, subtasks)
   end
 
-  defp apply_action(socket, :new, _params) do
+  defp apply_action(socket, :new, params) do
+    Appsignal.Logger.info(
+      "new_apply_action",
+      "Apply action the new subtask page by #{socket.assigns.current_user.id} for todo #{params["id"]}"
+    )
+
     socket
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:subtask, %Subtask{})
   end
 
   defp apply_action(socket, :edit, params) do
+    Appsignal.Logger.info(
+      "edit_apply_action",
+      "Apply action the #{params["id"]} edit page by #{socket.assigns.current_user.id}"
+    )
+
     %{"subtask_id" => subtask_id} = params
 
     socket
@@ -61,12 +84,42 @@ defmodule TodoLvWeb.TodoLive.Show do
     |> assign(:subtask, Subtasks.get_subtask!(subtask_id))
   end
 
+  @doc """
+  Responsibilities:
+
+  **Handles messages from:
+  SubtaskFormComponent: Updates todo status based on subtasks.
+  PubSub: Streams subtask updates and handles permission changes.
+  Function Docs:
+
+  handle_info({TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}}, socket):
+  Updates todo status based on subtask completion using helper/1.
+  Updates the todo in the database.
+  Streams the saved subtask to clients.
+
+  handle_info({:subtask, subtask}, socket):
+  Inserts a new or updated subtask into the live view stream.
+
+  handle_info({:delete_msg, msg}, socket):
+  Displays an error message about revoked permissions.
+  Redirects to the todos list.
+
+  handle_info({:update_msg, msg, :edit_access, edit_access}, socket):
+  Updates the edit permission for the user.
+  Displays an informational message about the permission change.
+  """
+
   # handles the updation of status of todo based on status of subtasks
   @impl true
   def handle_info(
         {TodoLvWeb.TodoLive.SubtaskFormComponent, {:saved, subtask, :todo_id, todo_id}},
         socket
       ) do
+    Appsignal.Logger.info(
+      "handle_info",
+      "Handled the updation of status of #{todo_id} based on #{subtask.id} by #{socket.assigns.current_user.id}"
+    )
+
     todo = Todos.get_todo!(todo_id)
     subtasks = todo.subtasks
     list = helper(subtasks)
@@ -80,13 +133,23 @@ defmodule TodoLvWeb.TodoLive.Show do
 
   # Handles Pubsub
   def handle_info({:subtask, subtask}, socket) do
+    Appsignal.Logger.info(
+      "handle_info",
+      "Handled the addition of new subtask #{subtask.id} by #{socket.assigns.current_user.id}"
+    )
+
     {:noreply,
      socket
      |> stream_insert(:subtasks, subtask)}
   end
 
-  def handle_info({:delete_msg, msg}, socket) do
+  def handle_info({:delete_msg, msg, :todo_id, todo_id}, socket) do
     IO.inspect("deleted permission")
+
+    Appsignal.Logger.info(
+      "handle_info",
+      "Handled the deletion of permission of #{socket.assigns.current_user.id} on #{todo_id}"
+    )
 
     {:noreply,
      socket
@@ -94,8 +157,13 @@ defmodule TodoLvWeb.TodoLive.Show do
      |> redirect(to: ~p"/todos")}
   end
 
-  def handle_info({:update_msg, msg, :edit_access, edit_access}, socket) do
+  def handle_info({:update_msg, msg, :edit_access, edit_access, :todo_id, todo_id}, socket) do
     IO.inspect(msg)
+
+    Appsignal.Logger.info(
+      "handle_info",
+      "Handled the updation of permission of #{socket.assigns.current_user.id} on #{todo_id}"
+    )
 
     {:noreply,
      socket
@@ -103,16 +171,21 @@ defmodule TodoLvWeb.TodoLive.Show do
      |> put_flash(:info, msg)}
   end
 
+  @doc """
+  Deletes a subtask with the given `id`.
+  """
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Handled the deletion of subtask of #{id} by #{socket.assigns.current_user.id}"
+    )
+
     IO.inspect(id)
     subtask = Subtasks.get_subtask!(id)
     {:ok, _} = Subtasks.delete_subtask(subtask)
 
-    IO.inspect(socket.assigns.streams, label: "before")
-    x = stream_delete(socket, :subtasks, subtask)
-    IO.inspect(socket.assigns.streams, label: "after")
-    {:noreply, x}
+    {:noreply, stream_delete(socket, :subtasks, subtask)}
   end
 
   defp helper(subtasks) do

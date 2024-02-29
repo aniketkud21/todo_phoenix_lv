@@ -2,10 +2,14 @@ import Config
 
 # Configure your database
 config :todo_lv, TodoLv.Repo,
-  username: "aniketkudtarkar",
-  password: "password#123",
-  hostname: "localhost",
-  database: "todo_lv_dev",
+  # {:system, "DATABASE_USERNAME"},
+  username: System.get_env("DATABASE_USERNAME"),
+  # {:system, "DATABASE_PASSWORD"}
+  password: System.get_env("DATABASE_PASSWORD"),
+  # {:system, "DATABASE_HOSTNAME"}
+  hostname: System.get_env("DATABASE_HOSTNAME"),
+  # {:system, "DATABASE_NAME"},
+  database: System.get_env("DATABASE_NAME"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -82,3 +86,5 @@ config :phoenix_live_view, :debug_heex_annotations, true
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :appsignal, :config, active: true

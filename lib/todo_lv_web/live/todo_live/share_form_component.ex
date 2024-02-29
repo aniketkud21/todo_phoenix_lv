@@ -1,4 +1,17 @@
 defmodule TodoLvWeb.TodoLive.ShareFormComponent do
+  @moduledoc """
+  Manages sharing a todo with other users.
+
+  Key Responsibilities:
+
+  Lists existing users and their assigned roles for the todo.
+  Provides a form to add new users with specific roles.
+  Handles user interactions:
+  Validates form data.
+  Creates or updates sharing permissions.
+  Broadcasts permission updates to subscribed users.
+  """
+
   alias TodoLv.Roles
   alias TodoLv.Accounts
   alias TodoLv.Permissions
@@ -61,6 +74,11 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     all_permissions = Permissions.get_permissions_by_todo_id!(assigns.todo.id)
     IO.inspect(all_permissions)
 
+    Appsignal.Logger.info(
+      "update",
+      "Assigning changeset of permissions form for #{assigns.todo.id}"
+    )
+
     {:ok,
      socket
      |> assign(assigns)
@@ -68,6 +86,15 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
      |> stream(:permissions, all_permissions)}
   end
 
+  @doc """
+  validate: Validates form data (no specific action required).
+  delete_permission: Deletes a permission and broadcasts a message.
+  share:
+  Creates a new permission if user doesn't exist or permission doesn't exist.
+  Updates an existing permission if it does exist (excluding creator role).
+  Broadcasts permission update messages based on the assigned role.
+  Provides feedback through flash messages and permission updates.
+  """
   @impl true
   def handle_event("validate", params, socket) do
     IO.inspect(params)
@@ -76,6 +103,10 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
 
   @impl true
   def handle_event("delete_permission", %{"id" => id}, socket) do
+    Appsignal.Logger.info(
+      "handle_event",
+      "Deleting permission #{id}"
+    )
     IO.inspect(id)
     permission = Permissions.get_permission!(id)
     {:ok, _} = Permissions.delete_permission(permission)
@@ -83,7 +114,8 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     Phoenix.PubSub.broadcast(
       TodoLv.PubSub,
       "share:#{permission.todo_id}",
-      {:delete_msg, "Your permission to access this todo has been revoked."}
+      {:delete_msg, "Your permission to access this todo has been revoked.", :todo_id,
+       permission.todo_id}
     )
 
     {:noreply, stream_delete(socket, :permissions, permission)}
@@ -95,6 +127,8 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     user = Accounts.get_user_by_email(email)
     role = Roles.get_role_by_name!(role)
     IO.inspect(email, label: "email during testing")
+
+
 
     # IO.inspect(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email), "role_id" => Roles.get_role_by_name!(role)}, label: "to save struct")
 
@@ -108,6 +142,10 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     else
       case Permissions.get_user_todo_permission(user.id, socket.assigns.todo.id) do
         nil ->
+          Appsignal.Logger.info(
+            "handle_event",
+            "Sharing #{role.id} permission #{socket.assigns.todo.id} for user #{user.id}"
+          )
           create_permission(socket, socket.assigns.todo.id, user.id, role.id)
 
         permission ->
@@ -119,6 +157,10 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
              socket
              |> put_flash(:error, "Can't edit permission")}
           else
+            Appsignal.Logger.info(
+            "handle_event",
+            "Updating #{role.id} permission #{socket.assigns.todo.id} for user #{user.id}"
+          )
             update_permission(socket, permission, socket.assigns.todo.id, user.id, role.id)
           end
       end
@@ -140,13 +182,15 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
           Phoenix.PubSub.broadcast(
             TodoLv.PubSub,
             "share:#{todo_id}",
-            {:update_msg, "Your permissions on this todo have been limited.", :edit_access, false}
+            {:update_msg, "Your permissions on this todo have been limited.", :edit_access, false,
+             :todo_id, todo_id}
           )
         else
           Phoenix.PubSub.broadcast(
             TodoLv.PubSub,
             "share:#{todo_id}",
-            {:update_msg, "Your permissions on this todo have been upgraded.", :edit_access, true}
+            {:update_msg, "Your permissions on this todo have been upgraded.", :edit_access, true,
+             :todo_id, todo_id}
           )
         end
 

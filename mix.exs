@@ -54,7 +54,8 @@ defmodule TodoLv.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:plug_cowboy, "~> 2.5"},
       {:excoveralls, "~> 0.18", only: :test},
-      {:logfmt_ex, "~> 0.4"}
+      {:logfmt_ex, "~> 0.4"},
+      {:appsignal_phoenix, "~> 2.0"}
     ]
   end
 

@@ -7,6 +7,9 @@ defmodule TodoLv.Application do
 
   @impl true
   def start(_type, _args) do
+    Appsignal.Logger.Handler.add("phoenix")
+    Appsignal.Phoenix.LiveView.attach()
+
     children = [
       TodoLvWeb.Telemetry,
       TodoLv.Repo,
