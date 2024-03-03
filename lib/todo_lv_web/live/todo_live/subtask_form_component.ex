@@ -114,6 +114,7 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
           "handle_event",
           "Saving edited subtask #{subtask.id} of #{subtask.todo_id}"
         )
+
         # notify the status of subtask to main todo
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
         # broadcast the edited subtask
@@ -132,10 +133,12 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect("IN ERRRORR")
+
         Appsignal.Logger.error(
           "handle_event",
           "Failed to Save edited subtask of #{subtask_params.todo_id}"
         )
+
         {:noreply, assign_form(socket, changeset)}
     end
   end
@@ -147,6 +150,7 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
           "handle_event",
           "Saving new subtask #{subtask.id} of #{subtask.todo_id}"
         )
+
         # notify the status of subtask to main todo
         notify_parent({:saved, subtask, :todo_id, socket.assigns.todo.id})
         # broadcast the new subtask
@@ -166,6 +170,7 @@ defmodule TodoLvWeb.TodoLive.SubtaskFormComponent do
           "handle_event",
           "Failed to Save new subtask of #{subtask_params.todo_id}"
         )
+
         {:noreply, assign_form(socket, changeset)}
     end
   end

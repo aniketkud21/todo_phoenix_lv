@@ -107,6 +107,7 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
       "handle_event",
       "Deleting permission #{id}"
     )
+
     IO.inspect(id)
     permission = Permissions.get_permission!(id)
     {:ok, _} = Permissions.delete_permission(permission)
@@ -128,8 +129,6 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
     role = Roles.get_role_by_name!(role)
     IO.inspect(email, label: "email during testing")
 
-
-
     # IO.inspect(%{"todo_id" => socket.assigns.todo.id, "user_id" => Accounts.get_user_by_email(email), "role_id" => Roles.get_role_by_name!(role)}, label: "to save struct")
 
     # If the user doesnt exist on the app
@@ -146,6 +145,7 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
             "handle_event",
             "Sharing #{role.id} permission #{socket.assigns.todo.id} for user #{user.id}"
           )
+
           create_permission(socket, socket.assigns.todo.id, user.id, role.id)
 
         permission ->
@@ -158,9 +158,10 @@ defmodule TodoLvWeb.TodoLive.ShareFormComponent do
              |> put_flash(:error, "Can't edit permission")}
           else
             Appsignal.Logger.info(
-            "handle_event",
-            "Updating #{role.id} permission #{socket.assigns.todo.id} for user #{user.id}"
-          )
+              "handle_event",
+              "Updating #{role.id} permission #{socket.assigns.todo.id} for user #{user.id}"
+            )
+
             update_permission(socket, permission, socket.assigns.todo.id, user.id, role.id)
           end
       end

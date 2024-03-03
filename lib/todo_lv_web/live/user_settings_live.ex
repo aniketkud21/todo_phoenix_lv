@@ -10,6 +10,8 @@ defmodule TodoLvWeb.UserSettingsLive do
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
+    <h2>My Api Key: <%= @current_user.api_key %></h2>
+
     <div class="space-y-12 divide-y">
       <div>
         <.simple_form

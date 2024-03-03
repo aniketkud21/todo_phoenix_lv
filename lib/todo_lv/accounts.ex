@@ -26,6 +26,9 @@ defmodule TodoLv.Accounts do
     Repo.get_by(User, email: email) |> Repo.preload(todos: [:category])
   end
 
+  def get_user_by_api_key(api_key) do
+    Repo.get_by(User, api_key: api_key) |> Repo.preload(todos: [:subtasks, :category])
+  end
   @doc """
   Gets a user by email and password.
 
@@ -367,5 +370,10 @@ defmodule TodoLv.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  def generate_api_key(length \\ 32) do
+    :crypto.strong_rand_bytes(length)
+    |> Base.encode16()
   end
 end

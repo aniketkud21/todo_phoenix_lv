@@ -22,7 +22,16 @@ defmodule TodoLvWeb.Router do
     pipe_through :api
 
     # get "/" , TodoController, :show
+
+    # live "/dashboard", TodoLive.Dashboard, :dashboard
+    post "/authenticate", TodoController, :authenticate
     resources "/todos", TodoController, except: [:new, :edit]
+  end
+
+  scope "/api", TodoLvWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live "/dashboard", DashboardLive, :dashboard
   end
 
   scope "/", TodoLvWeb do

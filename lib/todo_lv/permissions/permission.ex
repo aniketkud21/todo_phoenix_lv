@@ -9,8 +9,8 @@ defmodule TodoLv.Permissions.Permission do
   end
 
   @doc false
-  def changeset(todo, attrs) do
-    todo
+  def changeset(permission, attrs) do
+    permission
     |> cast(attrs, [:todo_id, :user_id, :role_id])
     |> validate_required([:todo_id, :user_id, :role_id])
   end

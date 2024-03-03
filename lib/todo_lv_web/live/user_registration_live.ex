@@ -1,4 +1,5 @@
 defmodule TodoLvWeb.UserRegistrationLive do
+  alias TodoLv.Credits
   use TodoLvWeb, :live_view
 
   alias TodoLv.Accounts
@@ -33,6 +34,13 @@ defmodule TodoLvWeb.UserRegistrationLive do
 
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
+        <.input
+          field={@form[:user_type]}
+          type="select"
+          options={["user", "client"]}
+          label="User Type"
+          required
+        />
 
         <:actions>
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
@@ -54,6 +62,12 @@ defmodule TodoLvWeb.UserRegistrationLive do
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
+    api_key = Accounts.generate_api_key()
+
+    user_params =
+      user_params
+      |> Map.put_new("api_key", api_key)
+
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
@@ -61,6 +75,17 @@ defmodule TodoLvWeb.UserRegistrationLive do
             user,
             &url(~p"/users/confirm/#{&1}")
           )
+
+        IO.inspect(user, label: "my user")
+
+        if(user.user_type == "client") do
+          Credits.create_credit(%{
+            "credits" => 500,
+            "user_id" => user.id
+          })
+
+          # {:ok, _} = Credits.create_credit(%{client_id: user.id, credits: 500})
+        end
 
         changeset = Accounts.change_user_registration(user)
         {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
@@ -71,11 +96,13 @@ defmodule TodoLvWeb.UserRegistrationLive do
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
+    IO.inspect(user_params, label: "carrom")
     changeset = Accounts.change_user_registration(%User{}, user_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    IO.inspect(changeset, label: "label")
     form = to_form(changeset, as: "user")
 
     if changeset.valid? do
